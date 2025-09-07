@@ -1,16 +1,16 @@
 import { QTable } from "./qtable";
-import { DiscreteEnv, Policy, QLearningConfig, RolloutOptions, TrainOptions } from "./types";
+import { DiscreteEnv, Encoder, Policy, QLearningConfig, RolloutOptions, TrainOptions } from "./types";
 import { defaultEncoder } from "./utils";
 
-export class QLeaningAgent<S, A> {
+export class QLearningAgent<S, A> {
     readonly q: QTable<S, A>;
 
     constructor(
         private readonly env: DiscreteEnv<S, A>,
         private readonly policy: Policy<S, A>,
         private readonly cfg: QLearningConfig,
-        sEncoder = defaultEncoder,
-        aEncoder = defaultEncoder
+        sEncoder: Encoder<S> = defaultEncoder,
+        aEncoder: Encoder<A> = defaultEncoder
     ) {
         this.q = new QTable<S, A>(sEncoder, aEncoder);
     }
@@ -65,7 +65,7 @@ export class QLeaningAgent<S, A> {
      * Greedy (evaluation) rollout variant without exploration.
      * @return path of states visited and total reward accumulated.
      */
-    rollOut(startState?: S, opts: RolloutOptions = {}) {
+    rollout(startState?: S, opts: RolloutOptions = {}) {
         const maxSteps = opts.maxSteps ?? Infinity;
         let s = startState ?? this.env.reset();
 

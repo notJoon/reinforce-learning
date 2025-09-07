@@ -11,8 +11,8 @@
     "test:watch": "jest --config jest.config.cjs --watch",
     "test:coverage": "jest --config jest.config.cjs --coverage",
     "test:verbose": "jest --config jest.config.cjs --verbose",
-    "example:knight": "ts-node examples/knight-5x5.ts",
-    "example:export": "node examples/export-qtable.mjs"
+    "example": "node run-example.js",
+    "example:knight": "tsx ../examples/knight/knight.ts"
   },
   "keywords": [
     "reinforcement-learning",

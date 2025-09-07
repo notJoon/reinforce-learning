@@ -1,11 +1,22 @@
 # qlearn-lite
 
-![Tests](https://github.com/ibyeongjun/reinforce-learning/workflows/Tests/badge.svg)
-![CI](https://github.com/ibyeongjun/reinforce-learning/workflows/CI/badge.svg)
-
 Lightweight, reusable tabular Q-learning library for discrete RL environments in TypeScript.
 
 ## Quick Start
+
+```bash
+# Install dependencies
+npm install
+
+# Build the library
+npm run build
+
+# Run examples
+npm run example knight     # Run Knight's Tour example
+npm run example            # List all available examples
+```
+
+### Using Make (Alternative)
 
 ```bash
 # Install dependencies
@@ -42,6 +53,42 @@ make visualize  # Generate heatmap visualization
 | `make dev` | Development mode (clean + pipeline) |
 | `make check` | Check if required tools are installed |
 | `make help` | Show available commands |
+
+## Running Examples
+
+The library includes ready-to-run examples demonstrating various RL problems. Each example has its own README with detailed documentation.
+
+### Available Examples
+
+- **knight**: Knight's Tour problem - Train a chess knight to visit all squares on a board
+
+### Basic Usage
+
+```bash
+# List all available examples
+npm run example
+
+# Run a specific example
+npm run example <name>
+
+# Run with parameters
+npm run example <name> [args...]
+```
+
+### Example with Parameters
+
+```bash
+# Run knight example with default settings
+npm run example knight
+
+# Run with 8x8 board
+npm run example knight 8
+
+# Run with 6x6 board and 10000 episodes
+npm run example knight 6 10000
+```
+
+For detailed documentation on each example, see the README in the respective example directory (e.g., `examples/knight/README.md`).
 
 ## Example Usage
 
@@ -94,21 +141,6 @@ python3 visualize_qtable.py qtable_grid.json -o heatmap.png -r 4 -c 4
 
 # Visualize full Q-table
 python3 visualize_qtable.py qtable.json -o heatmap_full.png -r 4 -c 4
-```
-
-## Project Structure
-
-```
-qlearn-lite/
-├── src/              # TypeScript source files
-│   ├── agent.ts      # Q-learning agent
-│   ├── qtable.ts     # Q-table implementation
-│   ├── policy.ts     # Action selection policies
-│   └── types.ts      # Type definitions
-├── examples/         # Example implementations
-├── dist/             # Compiled JavaScript (generated)
-├── Makefile          # Build automation
-└── package.json      # Node.js configuration
 ```
 
 ## Requirements
