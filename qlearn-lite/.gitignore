@@ -1,0 +1,45 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+*.tsbuildinfo
+
+# Testing
+coverage/
+*.lcov
+
+# Generated Q-tables and visualizations
+qtable.json
+qtable_grid.json
+qtable_heatmap.png
+qtable_full_heatmap.png
+test_heatmap.png
+*.png
+!example/*.png
+!examples/*.png
+!docs/*.png
+
+# Keep important config files
+!package.json
+!package-lock.json
+!tsconfig.json
+!tsconfig.*.json
+!jest.config.cjs
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+
+# Temporary
+*.tmp
+*.temp
+*.bak

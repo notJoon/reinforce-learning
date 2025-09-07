@@ -70,9 +70,23 @@ visualize-full: $(QTABLE_JSON)
 	$(PYTHON) ../visualize_qtable.py $(QTABLE_JSON) -o $(HEATMAP_FULL_PNG) -r 4 -c 4
 	@echo "Visualization saved to $(HEATMAP_FULL_PNG)"
 
+# Run tests
+.PHONY: test
+test: build
+	@echo "Running integration tests..."
+	$(NPM) test
+	@echo "Tests complete!"
+
+# Run tests with coverage
+.PHONY: test-coverage
+test-coverage: build
+	@echo "Running tests with coverage..."
+	$(NPM) run test:coverage
+	@echo "Coverage report generated!"
+
 # Complete pipeline: build, train, and visualize
 .PHONY: pipeline
-pipeline: clean build train visualize
+pipeline: clean build test train visualize
 	@echo "Complete pipeline finished!"
 	@echo "Generated files:"
 	@echo "  - $(QTABLE_JSON): Full Q-table data"
@@ -109,10 +123,12 @@ help:
 	@echo "  make build         - Build TypeScript files to JavaScript"
 	@echo "  make clean         - Remove build artifacts and generated files"
 	@echo "  make install       - Install Node.js and Python dependencies"
+	@echo "  make test          - Run integration tests"
+	@echo "  make test-coverage - Run tests with coverage report"
 	@echo "  make train         - Train Q-learning agent and export Q-table"
 	@echo "  make visualize     - Generate heatmap from simplified grid data"
 	@echo "  make visualize-full - Generate heatmap from full Q-table data"
-	@echo "  make pipeline      - Run complete pipeline (clean, build, train, visualize)"
+	@echo "  make pipeline      - Run complete pipeline (clean, build, test, train, visualize)"
 	@echo "  make quick         - Quick run (train and visualize without rebuild)"
 	@echo "  make dev           - Development mode (clean and run pipeline)"
 	@echo "  make check         - Check if required tools are installed"
