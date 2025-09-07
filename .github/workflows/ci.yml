@@ -1,0 +1,38 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  quick-test:
+    name: Quick Test
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20.x'
+        cache: 'npm'
+        cache-dependency-path: qlearn-lite/package-lock.json
+    
+    - name: Install and test qlearn-lite
+      working-directory: qlearn-lite
+      run: |
+        npm ci
+        npm run build
+        sed -i 's/from "\.\/\([^"]*\)"/from ".\/\1.js"/g' dist/*.js
+        npm test
+    
+    - name: Check test coverage
+      working-directory: qlearn-lite
+      run: |
+        npm run test:coverage
+        echo "Coverage report:"
+        cat coverage/lcov-report/index.html | grep -A 3 "fraction" || true

@@ -1,0 +1,151 @@
+name: Test qlearn-lite
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'qlearn-lite/**'
+      - '.github/workflows/test.yml'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'qlearn-lite/**'
+      - '.github/workflows/test.yml'
+  workflow_dispatch:
+
+defaults:
+  run:
+    working-directory: qlearn-lite
+
+jobs:
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x, 22.x]
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+    
+    - name: Setup Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+        cache-dependency-path: qlearn-lite/package-lock.json
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Build TypeScript
+      run: npm run build
+    
+    - name: Fix ES module imports
+      run: |
+        sed -i 's/from "\.\/\([^"]*\)"/from ".\/\1.js"/g' dist/*.js
+    
+    - name: Run tests
+      run: npm test
+    
+    - name: Run tests with coverage
+      run: npm run test:coverage
+    
+    - name: Upload coverage reports
+      if: matrix.node-version == '20.x'
+      uses: codecov/codecov-action@v3
+      with:
+        directory: ./qlearn-lite/coverage
+        flags: unittests
+        name: codecov-qlearn-lite
+        fail_ci_if_error: false
+
+  integration:
+    name: Integration Test
+    runs-on: ubuntu-latest
+    needs: test
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20.x'
+        cache: 'npm'
+        cache-dependency-path: qlearn-lite/package-lock.json
+    
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+        cache: 'pip'
+    
+    - name: Install Node dependencies
+      working-directory: qlearn-lite
+      run: npm ci
+    
+    - name: Install Python dependencies
+      run: pip install -r requirements.txt
+    
+    - name: Run full pipeline
+      working-directory: qlearn-lite
+      run: |
+        make clean
+        make build
+        make test
+        make train
+    
+    - name: Verify outputs
+      working-directory: qlearn-lite
+      run: |
+        test -f qtable.json && echo "✓ qtable.json exists" || exit 1
+        test -f qtable_grid.json && echo "✓ qtable_grid.json exists" || exit 1
+        echo "✓ All outputs generated successfully"
+    
+    - name: Generate visualization
+      working-directory: qlearn-lite
+      run: |
+        python3 ../visualize_qtable.py qtable_grid.json -o qtable_heatmap.png -r 4 -c 4
+        test -f qtable_heatmap.png && echo "✓ Visualization generated" || exit 1
+    
+    - name: Upload artifacts
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: test-outputs
+        path: |
+          qlearn-lite/qtable.json
+          qlearn-lite/qtable_grid.json
+          qlearn-lite/qtable_heatmap.png
+          qlearn-lite/coverage/
+
+  lint:
+    name: Lint and Type Check
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20.x'
+        cache: 'npm'
+        cache-dependency-path: qlearn-lite/package-lock.json
+    
+    - name: Install dependencies
+      working-directory: qlearn-lite
+      run: npm ci
+    
+    - name: TypeScript type check
+      working-directory: qlearn-lite
+      run: npx tsc --noEmit
+    
+    - name: Check for TypeScript errors in tests
+      working-directory: qlearn-lite
+      run: npx tsc --noEmit --project tsconfig.json --skipLibCheck tests/**/*.ts
