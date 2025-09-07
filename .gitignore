@@ -1,2 +1,12 @@
-node_modules
-package-lock.json
+node_modules/
+dist/
+.direnv/
+result
+result-*
+*.log
+.DS_Store
+
+# generated data
+*/*.json
+*/*.csv
+*/*.png
