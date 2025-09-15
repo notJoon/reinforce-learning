@@ -3,8 +3,8 @@
  */
 
 import * as fs from 'fs';
-import { TrajectoryEntry, RunMetadata, Observation, StepInfo } from './types';
-import { validateTrajectoryEntry, validateRunMetadata, validateObservation } from './validators';
+import { TrajectoryEntry, RunMetadata } from './types';
+import { validateTrajectoryEntry, validateRunMetadata } from './validators';
 
 /**
  * JSONL log entry types
