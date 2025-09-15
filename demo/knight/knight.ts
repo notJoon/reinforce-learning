@@ -1,7 +1,7 @@
-import { QLearningAgent } from "../../qlearn-lite/src/agent";
-import { EpsilonGreedy, ExpEpsilon } from "../../qlearn-lite/src/policy";
-import { createKnightEnv, Pos, Move } from "./src/env";
-import { writeFileSync } from "fs";
+import { QLearningAgent } from "qlearn-lite";
+import { EpsilonGreedy, ExpEpsilon } from "qlearn-lite";
+import { createKnightEnv, Pos, Move } from "./src/env.js";
+import { writeFileSync, mkdirSync } from "fs";
 import { join, dirname } from "path";
 import { fileURLToPath } from "url";
 import { spawn } from "child_process";
@@ -60,11 +60,16 @@ const pathData = {
 
 // Get the directory of the current module
 const currentDir = dirname(fileURLToPath(import.meta.url));
-const dataPath = join(currentDir, "path_data.json");
-const imagePath = join(currentDir, "image.png");
-const qtablePath = join(currentDir, "qtable.json");
-const qtableGridPath = join(currentDir, "qtable_grid.json");
-const qtableHeatmapPath = join(currentDir, "qtable_heatmap.png");
+const generatedDir = join(dirname(currentDir), "generated");
+
+// Ensure generated directory exists
+mkdirSync(generatedDir, { recursive: true });
+
+const dataPath = join(generatedDir, "knight_path_data.json");
+const imagePath = join(generatedDir, "knight_path.png");
+const qtablePath = join(generatedDir, "knight_qtable.json");
+const qtableGridPath = join(generatedDir, "knight_qtable_grid.json");
+const qtableHeatmapPath = join(generatedDir, "knight_qtable_heatmap.png");
 
 writeFileSync(dataPath, JSON.stringify(pathData, null, 2));
 console.log(`\nPath data saved to: ${dataPath}`);

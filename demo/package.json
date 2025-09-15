@@ -1,0 +1,20 @@
+{
+  "name": "rl-demo",
+  "version": "1.0.0",
+  "description": "Reinforcement learning demos using qlearn-lite",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "knight": "node dist/knight/knight.js",
+    "dev:knight": "tsx knight/knight.ts",
+    "qtable": "tsx qtable-visualization/export-qtable.ts"
+  },
+  "dependencies": {
+    "qlearn-lite": "file:../qlearn-lite"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "tsx": "^4.7.0",
+    "typescript": "^5.6.2"
+  }
+}
