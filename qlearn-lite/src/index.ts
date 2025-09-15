@@ -4,3 +4,5 @@ export * from "./policy";
 export * from "./schedules";
 export * from "./agent";
 export * from "./utils";
+export * from "./gym-env";
+export * from "./reward";
