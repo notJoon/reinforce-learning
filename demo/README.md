@@ -2,39 +2,90 @@
 
 This directory contains demonstration examples using the `qlearn-lite` library.
 
+## Quick Start
+
+```bash
+# Run a demo
+npm run dev:gridworld              # GridWorld navigation
+npm run dev:knight -- 5            # Knight's Tour on 5×5 board
+npm run qtable                     # Q-table visualization example
+
+# With visualizations (requires Python dependencies)
+npm run dev:gridworld -- --visualize
+npm run dev:knight -- 5 --visualize
+```
+
+## Demo Overview
+
+| Demo                                            | Description                           | Difficulty | Visualization   |
+| ----------------------------------------------- | ------------------------------------- | ---------- | --------------- |
+| [GridWorld](./gridworld/README.md)              | Navigate from start to goal in a grid | Easy       | ✅ Full support |
+| [Knight's Tour](./knight/README.md)             | Visit all chess squares exactly once  | Hard       | ✅ Full support |
+| [Q-Table Viz](./qtable-visualization/README.md) | Visualize Q-learning results          | Easy       | ✅ Built-in     |
+
 ## Generated Files
 
 All output files (JSON data, visualizations) are saved to the `generated/` directory, which is excluded from version control.
 
 ## Available Demos
 
-### 1. Knight's Tour (`knight/`)
+### Grid World
 
-A classic chess puzzle where a knight must visit every square on the board exactly once.
+A simple grid navigation task where an agent learns to find the shortest path from start to goal.
+
+[doc](./gridworld/README.md) (`gridworld/`)
+
+**Features:**
+
+- 5×5 grid environment with configurable size
+- Tabular Q-learning with epsilon-greedy exploration
+- Potential-based reward shaping for faster convergence
+- Visualization support for training curves, Q-values, and learned policy
 
 **Run the demo:**
 
 ```bash
-npm run dev:knight    # Development mode with tsx
-npm run knight        # Production mode (requires build)
-```
-
-**Command line options:**
-
-```bash
-npm run dev:knight -- 5   # 5x5 board (default)
-npm run dev:knight -- 8   # 8x8 board
+npm run dev:gridworld              # Basic training
+npm run dev:gridworld -- --visualize  # With visualizations
 ```
 
 **Generated files:**
 
-- `generated/knight_path_data.json` - Path taken by the knight
-- `generated/knight_qtable.json` - Full Q-table data
-- `generated/knight_qtable_grid.json` - Simplified grid Q-values
+- `gridworld_qtable.json` - Complete Q-table
+- `gridworld_history.json` - Training history
+- `gridworld_policy.png` - Learned policy visualization (with --visualize)
 
-### 2. Q-Table Visualization (`qtable-visualization/`)
+### 2. Knight's Tour
 
-Export and visualize Q-learning results as heatmaps.
+A classic chess puzzle where a knight must visit every square on the board exactly once.
+
+[doc](./knight/README.md) (`knight/`)
+
+**Features:**
+
+- Configurable board sizes (4×4 to 12×12)
+- Sparse reward environment with potential shaping
+- Exponential epsilon decay for exploration
+- Path and Q-value heatmap visualizations
+
+**Run the demo:**
+
+```bash
+npm run dev:knight -- 5              # 5×5 board
+npm run dev:knight -- 8 --visualize  # 8×8 with visualizations
+```
+
+**Generated files:**
+
+- `knight_path_data.json` - Knight's path coordinates
+- `knight_qtable.json` - Full Q-table data
+- `knight_path.png` - Path visualization (with --visualize)
+
+### 3. Q-Table Visualization
+
+Export and visualize Q-learning results as heatmaps. Demonstrates a simple 4×4 GridWorld.
+
+[doc](./qtable-visualization/README.md) (`qtable-visualization/`)
 
 **Run the demo:**
 
@@ -66,23 +117,6 @@ cd .. && npm install
 
 ```bash
 pip install -r ../requirements.txt
-```
-
-## Project Structure
-
-```
-demo/
-├── knight/                  # Knight's Tour RL implementation
-│   ├── knight.ts           # Main training script
-│   └── src/
-│       └── env.ts          # Knight environment
-├── qtable-visualization/    # Q-table export and visualization
-│   ├── export-qtable.ts    # GridWorld example
-│   └── README.md           # Detailed instructions
-├── generated/              # Output directory (gitignored)
-│   └── *.json, *.png      # Generated data and visualizations
-├── package.json            # Demo package configuration
-└── tsconfig.json           # TypeScript configuration
 ```
 
 ## Development

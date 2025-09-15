@@ -20,28 +20,28 @@ Define a gym-like environment contract (reset/step/close/seed), observation sche
 
 **Tasks**
 
-- [ ] Define TypeScript types for `Observation`, `Action`, `ActionMask`, `Info`.
-- [ ] Implement reward presets: `default`, `shaping-lite`, `strict`.
-- [ ] Implement JSONL logger with schema validation.
-- [ ] Add run metadata: `{engine, dataset, env_version, algo_version, seed}`.
-- [ ] Add timeout policy: per-step + per-episode.
+- [x] Define TypeScript types for `Observation`, `Action`, `ActionMask`, `Info`.
+- [x] Implement reward presets: `default`, `shaping-lite`, `strict`.
+- [x] Implement JSONL logger with schema validation.
+- [x] Add run metadata: `{engine, dataset, env_version, algo_version, seed}`.
+- [x] Add timeout policy: per-step + per-episode.
 - [ ] Update all `examples/` to new contract.
 - [ ] Write docs: `ENV.md`, `REWARD.md`, `LOGGING.md`.
 
 **Tests (What to verify)**
 
 - **Unit**
-  - [ ] Observation validator rejects malformed observations; accepts valid ones.
-  - [ ] ActionMask length matches action space; mask respected in `step`.
-  - [ ] Rewards follow the selected preset exactly (table-driven checks).
+  - [x] Observation validator rejects malformed observations; accepts valid ones.
+  - [x] ActionMask length matches action space; mask respected in `step`.
+  - [x] Rewards follow the selected preset exactly (table-driven checks).
 
 - **Integration**
-  - [ ] Given a fixed seed, two runs produce identical JSONL (hash/line count).
-  - [ ] Timeout triggers consistent `done=true` with `info.reason='timeout'`.
+  - [x] Given a fixed seed, two runs produce identical JSONL (hash/line count).
+  - [x] Timeout triggers consistent `done=true` with `info.reason='timeout'`.
 
 - **Property**
-  - [ ] For any episode, `sum(rewards)` is bounded and monotonic wrt shaping toggle.
-  - [ ] Log schema evolvability: older logs are readable with current schema (semver).
+  - [x] For any episode, `sum(rewards)` is bounded and monotonic wrt shaping toggle.
+  - [x] Log schema evolvability: older logs are readable with current schema (semver).
 
 **Risks / Mitigations**
 
