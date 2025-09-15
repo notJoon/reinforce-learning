@@ -6,3 +6,4 @@ export * from './agent';
 export * from './utils';
 export * from './gym-env';
 export * from './reward';
+export * from './timeout';

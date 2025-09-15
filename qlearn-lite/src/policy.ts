@@ -29,6 +29,14 @@ export class ExpEpsilon implements EpsilonSchedule {
   }
 }
 
+/** Constant epsilon schedule */
+export class ConstantEpsilon implements EpsilonSchedule {
+  constructor(private readonly eps: number) {}
+  epsilon(_episode: number): number {
+    return this.eps;
+  }
+}
+
 export class EpsilonGreedy<S, A> implements Policy<S, A> {
   constructor(
     private readonly schedule: EpsilonSchedule,
