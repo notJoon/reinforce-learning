@@ -2,13 +2,19 @@
  * Unit tests for reward presets
  */
 
-import { RewardConfig, RewardPreset, getRewardPreset, calculateReward, validateRewardConfig } from '../../src/reward';
+import {
+  RewardConfig,
+  RewardPreset,
+  getRewardPreset,
+  calculateReward,
+  validateRewardConfig,
+} from '../../src/reward';
 
 describe('Reward Presets', () => {
   describe('Preset Configurations', () => {
     it('should have default preset', () => {
       const preset = getRewardPreset('default');
-      
+
       expect(preset).toBeDefined();
       expect(preset.solve).toBeGreaterThan(0);
       expect(preset.invalid).toBeLessThanOrEqual(0);
@@ -18,7 +24,7 @@ describe('Reward Presets', () => {
 
     it('should have shaping-lite preset', () => {
       const preset = getRewardPreset('shaping-lite');
-      
+
       expect(preset).toBeDefined();
       expect(preset.solve).toBeGreaterThan(0);
       expect(preset.invalid).toBeLessThan(0);
@@ -30,7 +36,7 @@ describe('Reward Presets', () => {
 
     it('should have strict preset', () => {
       const preset = getRewardPreset('strict');
-      
+
       expect(preset).toBeDefined();
       expect(preset.solve).toBeGreaterThan(0);
       expect(preset.invalid).toBeLessThan(0);
@@ -51,9 +57,9 @@ describe('Reward Presets', () => {
       const reward = calculateReward({
         config: defaultPreset,
         event: 'solve',
-        shapingEnabled: true
+        shapingEnabled: true,
       });
-      
+
       expect(reward).toBe(defaultPreset.solve);
     });
 
@@ -61,9 +67,9 @@ describe('Reward Presets', () => {
       const reward = calculateReward({
         config: defaultPreset,
         event: 'invalid',
-        shapingEnabled: true
+        shapingEnabled: true,
       });
-      
+
       expect(reward).toBe(defaultPreset.invalid);
     });
 
@@ -71,9 +77,9 @@ describe('Reward Presets', () => {
       const reward = calculateReward({
         config: defaultPreset,
         event: 'timeout',
-        shapingEnabled: true
+        shapingEnabled: true,
       });
-      
+
       expect(reward).toBe(defaultPreset.timeout);
     });
 
@@ -81,9 +87,9 @@ describe('Reward Presets', () => {
       const reward = calculateReward({
         config: shapingPreset,
         event: 'step',
-        shapingEnabled: true
+        shapingEnabled: true,
       });
-      
+
       expect(reward).toBe(shapingPreset.stepCost);
     });
 
@@ -91,9 +97,9 @@ describe('Reward Presets', () => {
       const reward = calculateReward({
         config: shapingPreset,
         event: 'step',
-        shapingEnabled: false
+        shapingEnabled: false,
       });
-      
+
       expect(reward).toBe(0);
     });
 
@@ -103,29 +109,29 @@ describe('Reward Presets', () => {
         config: defaultPreset,
         event: 'step',
         additionalEvents: ['invalid'],
-        shapingEnabled: true
+        shapingEnabled: true,
       });
-      
+
       expect(reward).toBe(defaultPreset.stepCost + defaultPreset.invalid);
     });
   });
 
   describe('Reward Bounds and Monotonicity', () => {
     const presets: RewardPreset[] = ['default', 'shaping-lite', 'strict'];
-    
-    presets.forEach(presetName => {
+
+    presets.forEach((presetName) => {
       it(`should have bounded rewards for ${presetName} preset`, () => {
         const config = getRewardPreset(presetName);
-        
+
         // All rewards should be finite
         expect(isFinite(config.solve)).toBe(true);
         expect(isFinite(config.invalid)).toBe(true);
         expect(isFinite(config.timeout)).toBe(true);
         expect(isFinite(config.stepCost)).toBe(true);
-        
+
         // Solve should always be positive
         expect(config.solve).toBeGreaterThan(0);
-        
+
         // Penalties should be non-positive
         expect(config.invalid).toBeLessThanOrEqual(0);
         expect(config.timeout).toBeLessThanOrEqual(0);
@@ -137,13 +143,15 @@ describe('Reward Presets', () => {
       const defaultConfig = getRewardPreset('default');
       const shapingConfig = getRewardPreset('shaping-lite');
       const strictConfig = getRewardPreset('strict');
-      
+
       // Solve rewards should be consistent
       expect(defaultConfig.solve).toBe(shapingConfig.solve);
       expect(defaultConfig.solve).toBe(strictConfig.solve);
-      
+
       // Strict should have harsher invalid penalties than shaping
-      expect(Math.abs(strictConfig.invalid)).toBeGreaterThanOrEqual(Math.abs(shapingConfig.invalid));
+      expect(Math.abs(strictConfig.invalid)).toBeGreaterThanOrEqual(
+        Math.abs(shapingConfig.invalid),
+      );
     });
   });
 
@@ -153,15 +161,15 @@ describe('Reward Presets', () => {
         solve: 100,
         invalid: -50,
         timeout: -25,
-        stepCost: -2
+        stepCost: -2,
       };
-      
+
       const reward = calculateReward({
         config: customConfig,
         event: 'solve',
-        shapingEnabled: true
+        shapingEnabled: true,
       });
-      
+
       expect(reward).toBe(100);
     });
 
@@ -170,9 +178,9 @@ describe('Reward Presets', () => {
         solve: -10, // Should be positive
         invalid: 5, // Should be non-positive
         timeout: 10, // Should be non-positive
-        stepCost: 1 // Should be non-positive
+        stepCost: 1, // Should be non-positive
       };
-      
+
       expect(() => validateRewardConfig(invalidConfig)).toThrow();
     });
   });

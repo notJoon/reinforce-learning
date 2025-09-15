@@ -8,13 +8,13 @@
 export interface RewardConfig {
   /** Reward for successfully solving the problem */
   solve: number;
-  
+
   /** Penalty for invalid actions */
   invalid: number;
-  
+
   /** Penalty for timeout */
   timeout: number;
-  
+
   /** Cost per step (used for reward shaping) */
   stepCost: number;
 }
@@ -32,20 +32,20 @@ const REWARD_PRESETS: Record<RewardPreset, RewardConfig> = {
     solve: 10,
     invalid: -1,
     timeout: -5,
-    stepCost: -0.1
+    stepCost: -0.1,
   },
   'shaping-lite': {
     solve: 10,
     invalid: -0.5,
     timeout: -2,
-    stepCost: -0.05
+    stepCost: -0.05,
   },
   strict: {
     solve: 10,
     invalid: -10,
     timeout: -10,
-    stepCost: 0  // No step cost in strict mode
-  }
+    stepCost: 0, // No step cost in strict mode
+  },
 };
 
 /**
@@ -69,13 +69,13 @@ export type RewardEvent = 'solve' | 'invalid' | 'timeout' | 'step';
 export interface CalculateRewardOptions {
   /** Reward configuration to use */
   config: RewardConfig;
-  
+
   /** Primary event that occurred */
   event: RewardEvent;
-  
+
   /** Whether reward shaping is enabled */
   shapingEnabled: boolean;
-  
+
   /** Additional events that occurred in the same step */
   additionalEvents?: RewardEvent[];
 }
@@ -85,17 +85,17 @@ export interface CalculateRewardOptions {
  */
 export function calculateReward(options: CalculateRewardOptions): number {
   const { config, event, shapingEnabled, additionalEvents = [] } = options;
-  
+
   let totalReward = 0;
-  
+
   // Process primary event
   totalReward += getEventReward(config, event, shapingEnabled);
-  
+
   // Process additional events
   for (const additionalEvent of additionalEvents) {
     totalReward += getEventReward(config, additionalEvent, shapingEnabled);
   }
-  
+
   return totalReward;
 }
 

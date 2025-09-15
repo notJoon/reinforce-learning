@@ -11,6 +11,8 @@
     "test:watch": "jest --config jest.config.cjs --watch",
     "test:coverage": "jest --config jest.config.cjs --coverage",
     "test:verbose": "jest --config jest.config.cjs --verbose",
+    "format": "prettier --write \"src/**/*.ts\" \"tests/**/*.ts\"",
+    "format:check": "prettier --check \"src/**/*.ts\" \"tests/**/*.ts\"",
     "example": "node run-example.js",
     "example:knight": "tsx ../examples/knight/knight.ts"
   },
@@ -27,6 +29,7 @@
     "@types/jest": "^30.0.0",
     "@types/node": "^24.3.1",
     "jest": "^30.1.3",
+    "prettier": "^3.0.0",
     "ts-jest": "^29.4.1",
     "ts-node": "^10.9.2",
     "typescript": "^5.6.2"
