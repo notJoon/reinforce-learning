@@ -3,7 +3,7 @@
  */
 
 import { QTable } from '../../src/qtable';
-import { QLeaningAgent } from '../../src/agent';
+import { QLearningAgent } from '../../src/agent';
 import { DiscreteEnv } from '../../src/types';
 import { EpsilonGreedy, LinearEpsilon } from '../../src/policy';
 
@@ -63,7 +63,7 @@ describe('Q-Table Persistence and JSON Export', () => {
     it('should preserve Q-values after training and export', () => {
       const env = new TestEnv();
       const policy = new EpsilonGreedy(new LinearEpsilon(0.1, 0.01, 0.01));
-      const agent = new QLeaningAgent(
+      const agent = new QLearningAgent(
         env,
         policy,
         { alpha: 0.5, gamma: 0.9 }
@@ -199,7 +199,7 @@ describe('Q-Table Persistence and JSON Export', () => {
     it('should maintain Q-table consistency during training', () => {
       const env = new TestEnv();
       const policy = new EpsilonGreedy(new LinearEpsilon(0.5, 0.1, 0.01));
-      const agent = new QLeaningAgent(
+      const agent = new QLearningAgent(
         env,
         policy,
         { alpha: 0.3, gamma: 0.95 }
@@ -241,7 +241,7 @@ describe('Q-Table Persistence and JSON Export', () => {
       const env = new TestEnv();
       
       // Train first agent
-      const agent1 = new QLeaningAgent(
+      const agent1 = new QLearningAgent(
         env,
         new EpsilonGreedy(new LinearEpsilon(0.3, 0.01, 0.01)),
         { alpha: 0.5, gamma: 0.9 }
@@ -256,7 +256,7 @@ describe('Q-Table Persistence and JSON Export', () => {
       const trainedQTable = agent1.q.toJSON();
       
       // Create new agent and load Q-table
-      const agent2 = new QLeaningAgent(
+      const agent2 = new QLearningAgent(
         env,
         new EpsilonGreedy(new LinearEpsilon(0.0, 0.0, 0.0)), // No exploration
         { alpha: 0.5, gamma: 0.9 }
@@ -270,8 +270,8 @@ describe('Q-Table Persistence and JSON Export', () => {
       }
       
       // Both agents should perform similarly on rollout
-      const rollout1 = agent1.rollOut();
-      const rollout2 = agent2.rollOut();
+      const rollout1 = agent1.rollout();
+      const rollout2 = agent2.rollout();
       
       // Should achieve similar rewards
       expect(Math.abs(rollout1.totalReward - rollout2.totalReward)).toBeLessThan(2);
