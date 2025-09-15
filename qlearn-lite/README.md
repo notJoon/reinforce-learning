@@ -41,18 +41,18 @@ make visualize  # Generate heatmap visualization
 
 ## Makefile Commands
 
-| Command | Description |
-|---------|-------------|
-| `make build` | Compile TypeScript to JavaScript |
-| `make clean` | Remove build artifacts and generated files |
-| `make install` | Install Node.js and Python dependencies |
-| `make train` | Train Q-learning agent and export Q-table |
-| `make visualize` | Generate heatmap from Q-table data |
-| `make pipeline` | Run complete pipeline (clean, build, train, visualize) |
-| `make quick` | Quick train and visualize (no rebuild) |
-| `make dev` | Development mode (clean + pipeline) |
-| `make check` | Check if required tools are installed |
-| `make help` | Show available commands |
+| Command          | Description                                            |
+| ---------------- | ------------------------------------------------------ |
+| `make build`     | Compile TypeScript to JavaScript                       |
+| `make clean`     | Remove build artifacts and generated files             |
+| `make install`   | Install Node.js and Python dependencies                |
+| `make train`     | Train Q-learning agent and export Q-table              |
+| `make visualize` | Generate heatmap from Q-table data                     |
+| `make pipeline`  | Run complete pipeline (clean, build, train, visualize) |
+| `make quick`     | Quick train and visualize (no rebuild)                 |
+| `make dev`       | Development mode (clean + pipeline)                    |
+| `make check`     | Check if required tools are installed                  |
+| `make help`      | Show available commands                                |
 
 ## Running Examples
 
@@ -112,9 +112,15 @@ import { QLeaningAgent, EpsilonGreedy, ExpEpsilon } from 'qlearn-lite';
 
 // Define your environment
 class MyEnvironment {
-    reset() { /* ... */ }
-    actions(state) { /* ... */ }
-    step(state, action) { /* ... */ }
+  reset() {
+    /* ... */
+  }
+  actions(state) {
+    /* ... */
+  }
+  step(state, action) {
+    /* ... */
+  }
 }
 
 // Create and train agent
@@ -123,8 +129,8 @@ const policy = new EpsilonGreedy(new ExpEpsilon(1.0, 0.01, 0.005));
 const agent = new QLeaningAgent(env, policy, { alpha: 0.1, gamma: 0.95 });
 
 agent.train({
-    episodes: 1000,
-    maxStepsPerEpisode: 100
+  episodes: 1000,
+  maxStepsPerEpisode: 100,
 });
 
 // Export Q-table
@@ -152,6 +158,7 @@ python3 visualize_qtable.py qtable.json -o heatmap_full.png -r 4 -c 4
 - Matplotlib
 
 Check installation:
+
 ```bash
 make check
 ```

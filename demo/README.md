@@ -27,6 +27,7 @@ npm run dev:knight -- 8   # 8x8 board
 ```
 
 **Generated files:**
+
 - `generated/knight_path_data.json` - Path taken by the knight
 - `generated/knight_qtable.json` - Full Q-table data
 - `generated/knight_qtable_grid.json` - Simplified grid Q-values
@@ -48,6 +49,7 @@ python ../visualize_qtable.py generated/gridworld_qtable_grid.json -o generated/
 ```
 
 **Generated files:**
+
 - `generated/gridworld_qtable.json` - Full Q-table data
 - `generated/gridworld_qtable_grid.json` - Grid with max Q-values
 - `generated/gridworld_heatmap.png` - Visualization (after running python script)
@@ -55,11 +57,13 @@ python ../visualize_qtable.py generated/gridworld_qtable_grid.json -o generated/
 ## Setup
 
 1. Install dependencies from the root directory:
+
 ```bash
 cd .. && npm install
 ```
 
 2. For visualization, install Python dependencies:
+
 ```bash
 pip install -r ../requirements.txt
 ```

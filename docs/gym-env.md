@@ -75,9 +75,7 @@ const mask = env.getActionMask();
 Action masks indicate which actions are valid in the current state:
 
 ```typescript
-type ActionMask = 
-  | { type: 'boolean'; mask: boolean[] }
-  | { type: 'ids'; validActionIds: number[] };
+type ActionMask = { type: 'boolean'; mask: boolean[] } | { type: 'ids'; validActionIds: number[] };
 ```
 
 ### Boolean Mask
@@ -90,6 +88,7 @@ type ActionMask =
 ```
 
 ### ID List
+
 ```typescript
 {
   type: 'ids',
@@ -140,34 +139,41 @@ class GridWorld implements GymEnv<GridObservation, string, GridInfo> {
     this.steps = 0;
     return {
       position: [...this.position],
-      goalVisible: this.canSeeGoal()
+      goalVisible: this.canSeeGoal(),
     };
   }
 
   step(action: string): StepResult<GridObservation, GridInfo> {
     // Move based on action
     switch (action) {
-      case 'up':    this.position[1] = Math.max(0, this.position[1] - 1); break;
-      case 'down':  this.position[1] = Math.min(4, this.position[1] + 1); break;
-      case 'left':  this.position[0] = Math.max(0, this.position[0] - 1); break;
-      case 'right': this.position[0] = Math.min(4, this.position[0] + 1); break;
+      case 'up':
+        this.position[1] = Math.max(0, this.position[1] - 1);
+        break;
+      case 'down':
+        this.position[1] = Math.min(4, this.position[1] + 1);
+        break;
+      case 'left':
+        this.position[0] = Math.max(0, this.position[0] - 1);
+        break;
+      case 'right':
+        this.position[0] = Math.min(4, this.position[0] + 1);
+        break;
     }
 
     this.steps++;
-    const done = this.position[0] === this.goal[0] && 
-                 this.position[1] === this.goal[1];
-    
+    const done = this.position[0] === this.goal[0] && this.position[1] === this.goal[1];
+
     return {
       observation: {
         position: [...this.position],
-        goalVisible: this.canSeeGoal()
+        goalVisible: this.canSeeGoal(),
       },
       reward: done ? 10 : -1,
       done,
       info: {
         steps: this.steps,
-        distanceToGoal: this.manhattanDistance()
-      }
+        distanceToGoal: this.manhattanDistance(),
+      },
     };
   }
 
@@ -177,10 +183,10 @@ class GridWorld implements GymEnv<GridObservation, string, GridInfo> {
     if (this.position[1] < 4) validActions.push('down');
     if (this.position[0] > 0) validActions.push('left');
     if (this.position[0] < 4) validActions.push('right');
-    
+
     return {
       type: 'ids',
-      validActionIds: validActions
+      validActionIds: validActions,
     };
   }
 
@@ -193,8 +199,7 @@ class GridWorld implements GymEnv<GridObservation, string, GridInfo> {
   }
 
   private manhattanDistance(): number {
-    return Math.abs(this.position[0] - this.goal[0]) + 
-           Math.abs(this.position[1] - this.goal[1]);
+    return Math.abs(this.position[0] - this.goal[0]) + Math.abs(this.position[1] - this.goal[1]);
   }
 }
 ```
@@ -223,12 +228,12 @@ class DiscreteEnvAdapter<S, A> implements GymEnv<S, A, { steps: number }> {
     const result = this.env.step(this.lastState!, action);
     this.episodeSteps++;
     this.lastState = result.nextState;
-    
+
     return {
       observation: result.nextState,
       reward: result.reward,
       done: result.done,
-      info: { steps: this.episodeSteps }
+      info: { steps: this.episodeSteps },
     };
   }
 
@@ -236,7 +241,7 @@ class DiscreteEnvAdapter<S, A> implements GymEnv<S, A, { steps: number }> {
     const actions = this.env.actions(this.lastState!);
     return {
       type: 'ids',
-      validActionIds: actions
+      validActionIds: actions,
     };
   }
 

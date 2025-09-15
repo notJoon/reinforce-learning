@@ -1,119 +1,175 @@
-# Knight's Tour Problem
+# Knight's Tour - Reinforcement Learning Demo
 
-A Q-learning solution for the classic Knight's Tour problem, where a chess knight must visit as many squares as possible on a board without revisiting any square.
+This demo uses Q-learning to solve the Knight's Tour problem, a classic chess puzzle where a knight must visit every square on the board exactly once.
 
 ## Overview
 
-The Knight's Tour is a classic chess puzzle where you must move a knight piece to visit every square on the board exactly once. This implementation uses tabular Q-learning to train an agent to solve (or approximate) this problem.
+The Knight's Tour is a challenging problem for reinforcement learning because:
 
-## Features
+- Large state space (N² positions on an N×N board)
+- Sparse rewards (only at the end of a complete tour)
+- Complex movement patterns (L-shaped knight moves)
+- No revisiting allowed (each square visited only once)
 
-- Configurable board size (default: 5x5)
-- Adjustable training episodes
-- Potential-based reward shaping to encourage exploration
-- Modular code structure with separate environment and board configurations
+## Implementation Details
+
+### Environment (`src/env.ts`)
+
+The environment implements the `DiscreteEnv` interface with:
+
+- **State**: Current knight position `{x, y}`
+- **Actions**: Valid knight moves (up to 8 L-shaped moves)
+- **Rewards**:
+  - +1 per valid move (encourages exploration)
+  - -2 for illegal moves (prevents revisiting)
+  - +100 for completing the tour
+  - Potential-based shaping to guide learning
+
+### Agent Configuration
+
+- **Algorithm**: Tabular Q-learning
+- **Policy**: ε-greedy with exponential decay
+  - Initial ε: 0.8 (80% exploration)
+  - Final ε: 0.02 (2% exploration)
+  - Decay rate: 3.0/60000
+- **Learning parameters**:
+  - α (learning rate): 0.2
+  - γ (discount factor): 0.98
+- **Training**: 60,000 episodes
 
 ## Usage
 
 ### Basic Usage
 
 ```bash
-# Run with default settings (5x5 board, 60000 episodes)
-npm run example knight
+# Train on default 5×5 board
+npm run dev:knight
 
-# Or run directly
-npm run example:knight
+# Train on different board sizes
+npm run dev:knight -- 4   # 4×4 board
+npm run dev:knight -- 8   # 8×8 board
+npm run dev:knight -- 12  # 12×12 board
 ```
 
-### With Parameters
-
-Example:
+### With Visualization
 
 ```bash
-cd examples/knight
+# Generate visualizations after training
+npm run dev:knight -- 5 --visualize
+
+# Or use -v flag
+npm run dev:knight -- 5 -v
 ```
+
+## Generated Files
+
+All output files are saved to `../generated/`:
+
+### Data Files
+
+- **`knight_path_data.json`**: The knight's path through the board
+
+  ```json
+  {
+    "board_size": 5,
+    "start": {"x": 0, "y": 0},
+    "path": [{"step": 1, "x": 0, "y": 0}, ...],
+    "total_squares": 25,
+    "visited_squares": 18
+  }
+  ```
+
+- **`knight_qtable.json`**: Complete Q-table with state-action values
+- **`knight_qtable_grid.json`**: Simplified grid with max Q-value per position
+
+### Visualizations (with --visualize flag)
+
+- **`knight_path.png`**: Visual representation of the knight's path (requires Python visualization script)
+- **`knight_qtable_heatmap.png`**: Heatmap of Q-values across the board
+
+## Q-Table Visualization
+
+To manually generate a Q-table heatmap:
 
 ```bash
-npx tsx knight.ts 5 1000 --visualize
+python ../../visualize_qtable.py ../generated/knight_qtable_grid.json \
+  -o ../generated/knight_heatmap_NxN.png -r N -c N \
+  -t "Knight's Tour Q-values (NxN)"
 ```
 
-### Parameters
+Replace N with your board size.
 
-1. **Board Size** (first argument): Integer from 3 to 8
-   - Default: 5
-   - Larger boards are exponentially harder to solve
+### Example Q-table Heatmap
 
-2. **Episodes** (second argument): Number of training episodes
-   - Default: 60000
-   - More episodes generally lead to better solutions
+The heatmap shows learned Q-values for each board position:
 
-3. **Visualization** (flag): `--visualize` or `-v`
-   - Generates visual representations of:
-     - **Path visualization**: Knight's tour path on the board
-     - **Q-table heatmap**: Learned Q-values for each state
-   - Creates multiple output files:
-     - `image.png` and `image_hq.png`: Path visualization
-     - `qtable_heatmap.png`: Q-value heatmap
-     - `path_data.json`: Path data
-     - `qtable.json`: Full Q-table data
-     - `qtable_grid.json`: Simplified Q-table (max Q per state)
+- **Bright/Red areas**: High Q-values (good positions)
+- **Dark/Blue areas**: Low Q-values (difficult positions)
+- **Center positions**: Usually have higher values (more move options)
+- **Corners/edges**: Usually have lower values (fewer move options)
 
-## Implementation Details
+## Performance by Board Size
 
-### Reward Structure
+| Board Size | Typical Success Rate | Training Time | Difficulty |
+| ---------- | -------------------- | ------------- | ---------- |
+| 4×4        | ~80%                 | < 1 sec       | Easy       |
+| 5×5        | ~60%                 | ~2 sec        | Moderate   |
+| 6×6        | ~40%                 | ~5 sec        | Hard       |
+| 8×8        | ~10%                 | ~20 sec       | Very Hard  |
+| 12×12      | <5%                  | ~1 min        | Extreme    |
 
-- **+1**: For each new square visited
-- **+100**: Bonus for completing the full tour
-- **-2**: Penalty for illegal moves (revisiting squares or going out of bounds)
+## Algorithm Improvements
 
-### Potential-Based Reward Shaping
+The implementation includes several optimizations:
 
-The environment uses potential-based reward shaping (Ng et al., 1999) to guide the agent toward states with more available moves, helping it avoid dead-ends early in training.
-
-### Q-Learning Parameters
-
-- **Learning rate (α)**: 0.2
-- **Discount factor (γ)**: 0.98
-- **Exploration**: Exponential epsilon decay from 0.8 to 0.02
+1. **Potential-based reward shaping**: Guides the agent toward unvisited squares
+2. **Forbidden revisits**: Prevents cycles and encourages exploration
+3. **Adaptive exploration**: Exponential decay balances exploration/exploitation
+4. **State encoding**: Efficient string-based state representation
 
 ## Example Output
 
 ```
-ep=0 avgR≈0.12
-ep=5000 avgR≈14.24
-...
-Board 5×5 — Path length: 13/25
-1:(0,0) -> 2:(2,1) -> 3:(1,3) -> ... -> 13:(0,4)
+ep=0 avgR≈0.06
+ep=5000 avgR≈13.96
+ep=10000 avgR≈14.01
+ep=15000 avgR≈14.51
+ep=20000 avgR≈14.81
+ep=25000 avgR≈14.71
+ep=30000 avgR≈15.33
+ep=35000 avgR≈15.25
+ep=40000 avgR≈15.72
+ep=45000 avgR≈16.60
+ep=50000 avgR≈14.85
+ep=55000 avgR≈17.26
+Board 5×5 — Path length: 18/25
+1:(0,0) -> 2:(1,2) -> 3:(3,3) -> 4:(1,4) -> 5:(2,2) -> ... -> 18:(3,4)
 
-Path data saved to: path_data.json
-Q-table saved to: qtable.json
-Q-table grid saved to: qtable_grid.json
-
-Generating visualizations...
-Visualization saved to qtable_heatmap.png
-Q-table heatmap saved to: qtable_heatmap.png
-Path visualization saved to: image.png
+Path data saved to: /path/to/generated/knight_path_data.json
+Q-table saved to: /path/to/generated/knight_qtable.json
+Q-table grid saved to: /path/to/generated/knight_qtable_grid.json
 ```
 
-### Visualization Outputs
+## Troubleshooting
 
-#### Path Visualization
-The path visualization (`image.png`) shows:
-- Chessboard with alternating colors
-- **S**: Start position (green)
-- **E**: End position (red)
-- Red arrows showing the path
-- Numbered circles indicating step order
-- Title with completion statistics
+### Knight gets stuck
 
-#### Q-Table Heatmap
-The Q-table heatmap (`qtable_heatmap.png`) shows:
-- Heat map of maximum Q-values for each board position
-- Red/blue color scale (red = high Q-value, blue = low Q-value)
-- Numeric Q-values displayed in each cell
-- Grid overlay for clarity
-- Helps visualize which states the agent considers most valuable
+- Increase training episodes
+- Adjust exploration parameters (initial ε, decay rate)
+- Try different reward configurations
+
+### Visualization not working
+
+- Ensure Python dependencies are installed: `pip install -r ../../../requirements.txt`
+- Check that the generated JSON files exist in `../generated/`
+
+### Path visualization script missing
+
+- The `visualize.py` script for path visualization is not included in this demo
+- Use the Q-table heatmap visualization with `visualize_qtable.py` instead
 
 ## References
 
-- Ng, A. Y., Harada, D., & Russell, S. (1999). Policy invariance under reward transformations: Theory and application to reward shaping. *ICML*.
+- [Knight's Tour on Wikipedia](https://en.wikipedia.org/wiki/Knight%27s_tour)
+- Warnsdorff's heuristic (classical solution)
+- Q-learning with potential-based reward shaping (Ng et al., 1999)

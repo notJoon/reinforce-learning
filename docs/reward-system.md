@@ -19,10 +19,10 @@ The system recognizes four types of events that can generate rewards:
 
 ```typescript
 interface RewardConfig {
-  solve: number;      // Reward for solving
-  invalid: number;    // Penalty for invalid actions
-  timeout: number;    // Penalty for timeout
-  stepCost: number;   // Cost per step (for shaping)
+  solve: number; // Reward for solving
+  invalid: number; // Penalty for invalid actions
+  timeout: number; // Penalty for timeout
+  stepCost: number; // Cost per step (for shaping)
 }
 ```
 
@@ -81,7 +81,7 @@ const config = getRewardPreset('default');
 const reward = calculateReward({
   config,
   event: 'step',
-  shapingEnabled: true
+  shapingEnabled: true,
 });
 ```
 
@@ -89,16 +89,16 @@ const reward = calculateReward({
 
 ```typescript
 const customConfig: RewardConfig = {
-  solve: 100,      // Big reward for solving
-  invalid: -50,    // Heavy penalty for mistakes
-  timeout: -25,    // Moderate timeout penalty
-  stepCost: -2     // Higher step cost
+  solve: 100, // Big reward for solving
+  invalid: -50, // Heavy penalty for mistakes
+  timeout: -25, // Moderate timeout penalty
+  stepCost: -2, // Higher step cost
 };
 
 const reward = calculateReward({
   config: customConfig,
   event: 'solve',
-  shapingEnabled: true
+  shapingEnabled: true,
 });
 ```
 
@@ -111,7 +111,7 @@ const reward = calculateReward({
   config: getRewardPreset('default'),
   event: 'step',
   additionalEvents: ['invalid'], // Step + invalid action
-  shapingEnabled: true
+  shapingEnabled: true,
 });
 // Returns: stepCost + invalid penalty
 ```
@@ -125,7 +125,7 @@ Reward shaping helps guide learning by providing intermediate feedback:
 const shapedReward = calculateReward({
   config: getRewardPreset('shaping-lite'),
   event: 'step',
-  shapingEnabled: true
+  shapingEnabled: true,
 });
 // Returns: -0.05 (step cost)
 
@@ -133,7 +133,7 @@ const shapedReward = calculateReward({
 const sparseReward = calculateReward({
   config: getRewardPreset('shaping-lite'),
   event: 'step',
-  shapingEnabled: false
+  shapingEnabled: false,
 });
 // Returns: 0 (no step cost applied)
 ```
@@ -158,16 +158,16 @@ class RewardedEnvironment {
         reward: calculateReward({
           config: this.rewardConfig,
           event: 'invalid',
-          shapingEnabled: this.shapingEnabled
+          shapingEnabled: this.shapingEnabled,
         }),
         done: false,
-        info: { reason: 'invalid_action' }
+        info: { reason: 'invalid_action' },
       };
     }
 
     // Execute action
     const done = this.executeAction(action);
-    
+
     // Determine reward
     let event: RewardEvent = 'step';
     if (done && this.isSolved()) {
@@ -181,10 +181,10 @@ class RewardedEnvironment {
       reward: calculateReward({
         config: this.rewardConfig,
         event,
-        shapingEnabled: this.shapingEnabled
+        shapingEnabled: this.shapingEnabled,
       }),
       done,
-      info: this.getInfo()
+      info: this.getInfo(),
     };
   }
 }
@@ -199,10 +199,10 @@ import { validateRewardConfig } from 'qlearn-lite';
 
 try {
   validateRewardConfig({
-    solve: -10,    // Error: must be positive
-    invalid: 5,    // Error: must be non-positive
-    timeout: 10,   // Error: must be non-positive
-    stepCost: 1    // Error: must be non-positive
+    solve: -10, // Error: must be positive
+    invalid: 5, // Error: must be non-positive
+    timeout: 10, // Error: must be non-positive
+    stepCost: 1, // Error: must be non-positive
   });
 } catch (error) {
   console.error('Invalid configuration:', error.message);

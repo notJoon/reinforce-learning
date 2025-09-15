@@ -5,6 +5,7 @@ This document describes the timeout management system for controlling episode an
 ## Overview
 
 The timeout system provides configurable limits for:
+
 - Steps per episode
 - Total steps across all episodes
 
@@ -14,8 +15,8 @@ This ensures experiments complete in reasonable time and prevents infinite loops
 
 ```typescript
 interface TimeoutConfig {
-  maxStepsPerEpisode?: number;  // Limit per episode
-  maxTotalSteps?: number;       // Total limit across all episodes
+  maxStepsPerEpisode?: number; // Limit per episode
+  maxTotalSteps?: number; // Total limit across all episodes
 }
 ```
 
@@ -28,20 +29,20 @@ import { TimeoutManager } from 'qlearn-lite';
 
 const manager = new TimeoutManager({
   maxStepsPerEpisode: 1000,
-  maxTotalSteps: 10000
+  maxTotalSteps: 10000,
 });
 
 // Training loop
 for (let episode = 0; episode < 100; episode++) {
   manager.resetEpisode();
-  
+
   while (!manager.isEpisodeTimeout()) {
     // Take action
     manager.step();
-    
+
     if (done) break;
   }
-  
+
   if (manager.isTotalTimeout()) {
     console.log('Total step limit reached');
     break;
@@ -56,7 +57,7 @@ import { TimeoutPolicy } from 'qlearn-lite';
 
 const policy = new TimeoutPolicy({
   maxStepsPerEpisode: 1000,
-  maxTotalSteps: 10000
+  maxTotalSteps: 10000,
 });
 
 try {
@@ -79,12 +80,12 @@ The Q-learning agent already supports episode timeouts:
 ```typescript
 agent.train({
   episodes: 100,
-  maxStepsPerEpisode: 1000,  // Built-in support
+  maxStepsPerEpisode: 1000, // Built-in support
   onEpisodeEnd: (info) => {
     if (!info.terminated) {
       console.log(`Episode ${info.episode} timed out`);
     }
-  }
+  },
 });
 ```
 
@@ -92,7 +93,7 @@ For total step limits, use TimeoutManager:
 
 ```typescript
 const timeoutManager = new TimeoutManager({
-  maxTotalSteps: 50000
+  maxTotalSteps: 50000,
 });
 
 for (let run = 0; run < 10; run++) {
@@ -104,7 +105,7 @@ for (let run = 0; run < 10; run++) {
       if (timeoutManager.isTotalTimeout()) {
         throw new Error('Total timeout reached');
       }
-    }
+    },
   });
 }
 ```
@@ -120,7 +121,7 @@ console.log({
   totalSteps: info.totalSteps,
   isEpisodeTimeout: info.isEpisodeTimeout,
   isTotalTimeout: info.isTotalTimeout,
-  reason: info.reason  // 'episode_timeout' | 'total_timeout' | undefined
+  reason: info.reason, // 'episode_timeout' | 'total_timeout' | undefined
 });
 ```
 
@@ -133,11 +134,11 @@ function trainWithEarlyStopping(agent, maxSteps: number) {
   const timeout = new TimeoutManager({ maxTotalSteps: maxSteps });
   let bestReward = -Infinity;
   let stepsWithoutImprovement = 0;
-  
+
   while (!timeout.isTotalTimeout() && stepsWithoutImprovement < 1000) {
     const result = agent.rollout();
     timeout.step();
-    
+
     if (result.totalReward > bestReward) {
       bestReward = result.totalReward;
       stepsWithoutImprovement = 0;
@@ -145,7 +146,7 @@ function trainWithEarlyStopping(agent, maxSteps: number) {
       stepsWithoutImprovement++;
     }
   }
-  
+
   return bestReward;
 }
 ```
@@ -156,13 +157,13 @@ function trainWithEarlyStopping(agent, maxSteps: number) {
 class CurriculumTimeout {
   private difficulties = [100, 200, 500, 1000];
   private currentLevel = 0;
-  
+
   getConfig(): TimeoutConfig {
     return {
-      maxStepsPerEpisode: this.difficulties[this.currentLevel]
+      maxStepsPerEpisode: this.difficulties[this.currentLevel],
     };
   }
-  
+
   advance() {
     if (this.currentLevel < this.difficulties.length - 1) {
       this.currentLevel++;
@@ -177,24 +178,24 @@ class CurriculumTimeout {
 class AdaptiveTimeout {
   private recentLengths: number[] = [];
   private windowSize = 10;
-  
+
   updateEpisodeLength(length: number) {
     this.recentLengths.push(length);
     if (this.recentLengths.length > this.windowSize) {
       this.recentLengths.shift();
     }
   }
-  
+
   getConfig(): TimeoutConfig {
     if (this.recentLengths.length === 0) {
       return { maxStepsPerEpisode: 1000 };
     }
-    
+
     const avg = this.recentLengths.reduce((a, b) => a + b) / this.recentLengths.length;
     const buffer = 1.5; // 50% buffer
-    
+
     return {
-      maxStepsPerEpisode: Math.ceil(avg * buffer)
+      maxStepsPerEpisode: Math.ceil(avg * buffer),
     };
   }
 }
@@ -211,6 +212,7 @@ class AdaptiveTimeout {
 ## Timeout Strategies
 
 ### Conservative
+
 ```typescript
 {
   maxStepsPerEpisode: 10000,  // Very generous
@@ -219,6 +221,7 @@ class AdaptiveTimeout {
 ```
 
 ### Balanced
+
 ```typescript
 {
   maxStepsPerEpisode: 1000,   // Reasonable for most tasks
@@ -227,6 +230,7 @@ class AdaptiveTimeout {
 ```
 
 ### Strict
+
 ```typescript
 {
   maxStepsPerEpisode: 100,    // Force quick solutions
@@ -239,7 +243,7 @@ class AdaptiveTimeout {
 ```typescript
 const debug = new TimeoutManager({
   maxStepsPerEpisode: 100,
-  maxTotalSteps: 1000
+  maxTotalSteps: 1000,
 });
 
 // Track timeout patterns
@@ -247,12 +251,12 @@ const timeoutReasons: string[] = [];
 
 for (let ep = 0; ep < 50; ep++) {
   debug.resetEpisode();
-  
+
   while (!debug.isAnyTimeout()) {
     debug.step();
     // ... environment step ...
   }
-  
+
   const info = debug.getTimeoutInfo();
   if (info.reason) {
     timeoutReasons.push(info.reason);
@@ -260,8 +264,8 @@ for (let ep = 0; ep < 50; ep++) {
 }
 
 // Analyze timeout distribution
-const episodeTimeouts = timeoutReasons.filter(r => r === 'episode_timeout').length;
-const totalTimeouts = timeoutReasons.filter(r => r === 'total_timeout').length;
+const episodeTimeouts = timeoutReasons.filter((r) => r === 'episode_timeout').length;
+const totalTimeouts = timeoutReasons.filter((r) => r === 'total_timeout').length;
 ```
 
 ## See Also

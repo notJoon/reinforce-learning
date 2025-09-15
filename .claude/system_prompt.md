@@ -21,6 +21,7 @@ ALWAYS:
 ## Development Process Guards
 
 ### TESTING REQUIREMENTS:
+
 - Write failing tests first, then implement to make them pass
 - Never commit code with unhandled rejections
 - Include property-based testing for pure functions
@@ -28,6 +29,7 @@ ALWAYS:
 - Validate all edge cases and boundary conditions (especially with `null`/`undefined`)
 
 ### ARCHITECTURE REQUIREMENTS:
+
 - Explicit error handling — no hidden throws or silent failures
 - Type safety — strict null checks, no implicit coercion
 - Performance conscious — avoid unnecessary copies, deep clones, and excessive object spreads
@@ -51,6 +53,7 @@ Before marking any code complete, verify:
 ## TypeScript-Specific Quality Standards
 
 ### ERROR HANDLING:
+
 - Use discriminated unions or error objects for all fallible operations
 - Avoid `throw` in library code; prefer returning structured errors
 - Never rely on implicit `any` or `unknown` without narrowing
@@ -58,6 +61,7 @@ Before marking any code complete, verify:
 - Provide meaningful error messages with context
 
 ### TYPE SAFETY:
+
 - Enable `strict` mode in `tsconfig.json`
 - Avoid `any`; use generics, conditional types, or `unknown` with narrowing
 - Define explicit return types for all public functions
@@ -65,6 +69,7 @@ Before marking any code complete, verify:
 - Prefer `readonly` and immutability for state safety
 
 ### MODULE ORGANIZATION:
+
 - Single responsibility per module
 - Clear boundaries between internal/private APIs and exported/public APIs
 - Comprehensive JSDoc or TSDoc documentation
@@ -75,9 +80,10 @@ Before marking any code complete, verify:
 ## Critical Patterns to Avoid
 
 ### DANGEROUS PATTERNS:
+
 ```ts
 // NEVER DO THIS - silent throw in normal flow
-throw new Error("Unexpected state");
+throw new Error('Unexpected state');
 
 // NEVER DO THIS - using any
 function process(data: any) {
@@ -89,7 +95,7 @@ const user = data as User; // unsafe if structure is different
 
 // NEVER DO THIS - ignoring Promise errors
 someAsyncOperation();
-````
+```
 
 ### PREFERRED PATTERNS:
 
@@ -107,24 +113,28 @@ function operation(): Result<number> {
 }
 
 // DO THIS - safe narrowing
-if ("id" in data && typeof data.id === "number") {
+if ('id' in data && typeof data.id === 'number') {
   const id: number = data.id;
 }
 
 // DO THIS - exhaustive checking
-type Shape = { kind: "circle"; r: number } | { kind: "square"; size: number };
+type Shape = { kind: 'circle'; r: number } | { kind: 'square'; size: number };
 
 function area(s: Shape): number {
   switch (s.kind) {
-    case "circle": return Math.PI * s.r ** 2;
-    case "square": return s.size ** 2;
-    default: const _exhaustive: never = s; return _exhaustive;
+    case 'circle':
+      return Math.PI * s.r ** 2;
+    case 'square':
+      return s.size ** 2;
+    default:
+      const _exhaustive: never = s;
+      return _exhaustive;
   }
 }
 
 // DO THIS - proper async error handling
 await someAsyncOperation().catch((e) => {
-  console.error("Operation failed", e);
+  console.error('Operation failed', e);
 });
 ```
 
@@ -134,27 +144,27 @@ await someAsyncOperation().catch((e) => {
 
 ### COMPREHENSIVE TEST COVERAGE:
 
-* Unit tests for all public functions
-* Integration tests for async and I/O-heavy code
-* Property-based tests for pure utility functions
-* Stress tests for concurrency and large input sets
-* Edge case and boundary condition tests
+- Unit tests for all public functions
+- Integration tests for async and I/O-heavy code
+- Property-based tests for pure utility functions
+- Stress tests for concurrency and large input sets
+- Edge case and boundary condition tests
 
 ### TEST ORGANIZATION:
 
 ```ts
-describe("MyModule", () => {
-  it("handles normal operation", () => {
+describe('MyModule', () => {
+  it('handles normal operation', () => {
     expect(doSomething(2)).toBe(4);
   });
 
-  it("handles edge cases", () => {
+  it('handles edge cases', () => {
     expect(() => doSomething(-1)).toThrow();
   });
 
-  it("preserves invariants", () => {
+  it('preserves invariants', () => {
     const model = new DomainModel();
-    model.apply({ type: "INIT" });
+    model.apply({ type: 'INIT' });
     expect(model.isValid()).toBe(true);
   });
 });
@@ -166,11 +176,11 @@ describe("MyModule", () => {
 
 ### CODE DOCUMENTATION:
 
-* Document all public APIs with usage examples
-* Explain complex algorithms and type-level tricks
-* Document invariants and type expectations
-* Include safety notes for runtime checks
-* Provide example inputs/outputs in doc comments
+- Document all public APIs with usage examples
+- Explain complex algorithms and type-level tricks
+- Document invariants and type expectations
+- Include safety notes for runtime checks
+- Provide example inputs/outputs in doc comments
 
 ### ERROR DOCUMENTATION:
 

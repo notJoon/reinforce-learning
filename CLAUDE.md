@@ -9,6 +9,7 @@ This is a TypeScript-based reinforcement learning playground containing `qlearn-
 ## Build Commands
 
 ### Development Setup
+
 ```bash
 # Install dependencies (from qlearn-lite directory)
 cd qlearn-lite
@@ -22,6 +23,7 @@ npm run example:knight
 ```
 
 ### Nix Development Environment
+
 ```bash
 # Enter development shell with Node.js, TypeScript, and npm
 nix develop

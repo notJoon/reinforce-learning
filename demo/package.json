@@ -7,7 +7,9 @@
     "build": "tsc",
     "knight": "node dist/knight/knight.js",
     "dev:knight": "tsx knight/knight.ts",
-    "qtable": "tsx qtable-visualization/export-qtable.ts"
+    "qtable": "tsx qtable-visualization/export-qtable.ts",
+    "format": "prettier --write \"**/*.{ts,js,json,md}\" --ignore-path .gitignore",
+    "format:check": "prettier --check \"**/*.{ts,js,json,md}\" --ignore-path .gitignore"
   },
   "dependencies": {
     "qlearn-lite": "file:../qlearn-lite"

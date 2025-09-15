@@ -1,10 +1,10 @@
-import { QLearningAgent } from "qlearn-lite";
-import { EpsilonGreedy, ExpEpsilon } from "qlearn-lite";
-import { createKnightEnv, Pos, Move } from "./src/env.js";
-import { writeFileSync, mkdirSync } from "fs";
-import { join, dirname } from "path";
-import { fileURLToPath } from "url";
-import { spawn } from "child_process";
+import { QLearningAgent } from 'qlearn-lite';
+import { EpsilonGreedy, ExpEpsilon } from 'qlearn-lite';
+import { createKnightEnv, Pos, Move } from './src/env.js';
+import { writeFileSync, mkdirSync } from 'fs';
+import { join, dirname } from 'path';
+import { fileURLToPath } from 'url';
+import { spawn } from 'child_process';
 
 // Read N from argv or default 5
 const DEFAULT_N = 5;
@@ -28,7 +28,7 @@ const agent = new QLearningAgent<Pos, Move>(
   policy,
   { alpha: 0.2, gamma: 0.98 },
   (p) => `${p.x},${p.y}`,
-  (m) => `${m.dx},${m.dy}`
+  (m) => `${m.dx},${m.dy}`,
 );
 
 // Train
@@ -47,7 +47,7 @@ agent.train({
 // Greedy rollout
 const { path } = agent.rollout();
 console.log(`Board ${N}×${N} — Path length: ${path.length}/${N * N}`);
-console.log(path.map((p, i) => `${i + 1}:(${p.x},${p.y})`).join(" -> "));
+console.log(path.map((p, i) => `${i + 1}:(${p.x},${p.y})`).join(' -> '));
 
 // Save path data for visualization
 const pathData = {
@@ -55,21 +55,21 @@ const pathData = {
   start: { x: 0, y: 0 },
   path: path.map((p, i) => ({ step: i + 1, x: p.x, y: p.y })),
   total_squares: N * N,
-  visited_squares: path.length
+  visited_squares: path.length,
 };
 
 // Get the directory of the current module
 const currentDir = dirname(fileURLToPath(import.meta.url));
-const generatedDir = join(dirname(currentDir), "generated");
+const generatedDir = join(dirname(currentDir), 'generated');
 
 // Ensure generated directory exists
 mkdirSync(generatedDir, { recursive: true });
 
-const dataPath = join(generatedDir, "knight_path_data.json");
-const imagePath = join(generatedDir, "knight_path.png");
-const qtablePath = join(generatedDir, "knight_qtable.json");
-const qtableGridPath = join(generatedDir, "knight_qtable_grid.json");
-const qtableHeatmapPath = join(generatedDir, "knight_qtable_heatmap.png");
+const dataPath = join(generatedDir, 'knight_path_data.json');
+const imagePath = join(generatedDir, 'knight_path.png');
+const qtablePath = join(generatedDir, 'knight_qtable.json');
+const qtableGridPath = join(generatedDir, 'knight_qtable_grid.json');
+const qtableHeatmapPath = join(generatedDir, 'knight_qtable_heatmap.png');
 
 writeFileSync(dataPath, JSON.stringify(pathData, null, 2));
 console.log(`\nPath data saved to: ${dataPath}`);
@@ -89,43 +89,47 @@ writeFileSync(qtableGridPath, JSON.stringify(qtableGrid, null, 2));
 console.log(`Q-table grid saved to: ${qtableGridPath}`);
 
 // Check if visualization flag is set
-const shouldVisualize = process.argv.includes("--visualize") || process.argv.includes("-v");
+const shouldVisualize = process.argv.includes('--visualize') || process.argv.includes('-v');
 
 if (shouldVisualize) {
-  console.log("\nGenerating visualizations...");
-  
+  console.log('\nGenerating visualizations...');
+
   // Generate path visualization
-  const pythonScript = join(currentDir, "visualize.py");
-  const pathViz = spawn("python3", [pythonScript, dataPath, imagePath]);
-  
-  pathViz.on("close", (code) => {
+  const pythonScript = join(currentDir, 'visualize.py');
+  const pathViz = spawn('python3', [pythonScript, dataPath, imagePath]);
+
+  pathViz.on('close', (code) => {
     if (code === 0) {
       console.log(`Path visualization saved to: ${imagePath}`);
     } else {
       console.error(`Path visualization failed with code ${code}`);
     }
   });
-  
+
   // Generate Q-table heatmap
-  const qtableScript = join(dirname(dirname(currentDir)), "visualize_qtable.py");
-  const qtableViz = spawn("python3", [
-    qtableScript, 
-    qtableGridPath, 
-    "-o", qtableHeatmapPath,
-    "-r", String(N),
-    "-c", String(N),
-    "-t", `Q-values for Knight's Tour (${N}×${N})`
+  const qtableScript = join(dirname(dirname(currentDir)), 'visualize_qtable.py');
+  const qtableViz = spawn('python3', [
+    qtableScript,
+    qtableGridPath,
+    '-o',
+    qtableHeatmapPath,
+    '-r',
+    String(N),
+    '-c',
+    String(N),
+    '-t',
+    `Q-values for Knight's Tour (${N}×${N})`,
   ]);
-  
-  qtableViz.stdout.on("data", (data) => {
+
+  qtableViz.stdout.on('data', (data) => {
     console.log(`${data}`);
   });
-  
-  qtableViz.stderr.on("data", (data) => {
+
+  qtableViz.stderr.on('data', (data) => {
     console.error(`Q-table viz error: ${data}`);
   });
-  
-  qtableViz.on("close", (code) => {
+
+  qtableViz.on('close', (code) => {
     if (code === 0) {
       console.log(`Q-table heatmap saved to: ${qtableHeatmapPath}`);
     } else {

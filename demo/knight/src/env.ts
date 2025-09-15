@@ -1,4 +1,4 @@
-import { DiscreteEnv, QLearningAgent } from "qlearn-lite";
+import { DiscreteEnv, QLearningAgent } from 'qlearn-lite';
 
 /** Coordinate in the grid */
 export type Pos = { x: number; y: number };
@@ -30,9 +30,7 @@ export interface KnightEnvParams {
   enablePotentialShaping?: boolean;
 }
 
-export function createKnightEnv(
-  params: KnightEnvParams
-): DiscreteEnv<Pos, Move> {
+export function createKnightEnv(params: KnightEnvParams): DiscreteEnv<Pos, Move> {
   const N = params.size;
   if (!Number.isInteger(N) || N <= 0) {
     throw new Error(`Invalid board size: ${N}. Expected positive integer.`);

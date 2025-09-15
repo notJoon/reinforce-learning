@@ -1,6 +1,6 @@
 export interface Square {
-    x: number;
-    y: number;
+  x: number;
+  y: number;
 }
 
 /**
@@ -8,18 +8,18 @@ export interface Square {
  * Throws on invalid sizes (<=0 or non-integer).
  */
 export function generateSquareBoard(size: number): Square[] {
-    if (!Number.isInteger(size) || size <= 0) {
-        throw new Error(`Invalid board size: ${size}. Expected positive integer.`);
+  if (!Number.isInteger(size) || size <= 0) {
+    throw new Error(`Invalid board size: ${size}. Expected positive integer.`);
+  }
+  const cells: Square[] = [];
+  for (let y = 0; y < size; y++) {
+    for (let x = 0; x < size; x++) {
+      cells.push({ x, y });
     }
-    const cells: Square[] = [];
-    for (let y = 0; y < size; y++) {
-        for (let x = 0; x < size; x++) {
-            cells.push({ x, y });
-        }
-    }
-    return cells;
+  }
+  return cells;
 }
 
-export function render(x: number, y: number): "light" | "dark" {
-    return (x + y) % 2 === 0 ? "light" : "dark";
+export function render(x: number, y: number): 'light' | 'dark' {
+  return (x + y) % 2 === 0 ? 'light' : 'dark';
 }
