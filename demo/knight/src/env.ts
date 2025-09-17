@@ -1,4 +1,4 @@
-import { DiscreteEnv, QLearningAgent } from 'qlearn-lite';
+import { DiscreteEnv } from 'qlearn-lite';
 
 /** Coordinate in the grid */
 export type Pos = { x: number; y: number };

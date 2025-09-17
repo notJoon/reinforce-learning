@@ -21,7 +21,8 @@ npm run dev:knight -- 5 --visualize
 | ----------------------------------------------- | ------------------------------------- | ---------- | --------------- |
 | [GridWorld](./gridworld/README.md)              | Navigate from start to goal in a grid | Easy       | ✅ Full support |
 | [Knight's Tour](./knight/README.md)             | Visit all chess squares exactly once  | Hard       | ✅ Full support |
-| [Q-Table Viz](./qtable-visualization/README.md) | Visualize Q-learning results          | Easy       | ✅ Built-in     |
+
+TODO: add more examples.
 
 ## Generated Files
 
@@ -81,30 +82,6 @@ npm run dev:knight -- 8 --visualize  # 8×8 with visualizations
 - `knight_qtable.json` - Full Q-table data
 - `knight_path.png` - Path visualization (with --visualize)
 
-### 3. Q-Table Visualization
-
-Export and visualize Q-learning results as heatmaps. Demonstrates a simple 4×4 GridWorld.
-
-[doc](./qtable-visualization/README.md) (`qtable-visualization/`)
-
-**Run the demo:**
-
-```bash
-npm run qtable        # Train agent and export Q-table
-```
-
-**Visualize results:**
-
-```bash
-python ../visualize_qtable.py generated/gridworld_qtable_grid.json -o generated/gridworld_heatmap.png -r 4 -c 4
-```
-
-**Generated files:**
-
-- `generated/gridworld_qtable.json` - Full Q-table data
-- `generated/gridworld_qtable_grid.json` - Grid with max Q-values
-- `generated/gridworld_heatmap.png` - Visualization (after running python script)
-
 ## Setup
 
 1. Install dependencies from the root directory:
@@ -116,7 +93,7 @@ cd .. && npm install
 2. For visualization, install Python dependencies:
 
 ```bash
-pip install -r ../requirements.txt
+pip3 install -r ../requirements.txt
 ```
 
 ## Development

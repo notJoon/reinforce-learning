@@ -98,12 +98,12 @@ The grid visualization shows arrows indicating the best action for each state:
 
 ## Files Generated
 
-### Always Generated:
+**Always Generated:**
 
 - `generated/gridworld_qtable.json`: Complete Q-table with all state-action values
 - `generated/gridworld_history.json`: Training history including rewards and steps per episode
 
-### With `--visualize` flag:
+**With `--visualize` flag:**
 
 - `generated/gridworld_training.png`: Training progress curves showing episode rewards and steps
 - `generated/gridworld_qvalues.png`: Heatmap of maximum Q-values for each state
