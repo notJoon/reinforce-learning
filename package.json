@@ -1,0 +1,29 @@
+{
+  "name": "reinforce-learning-workspace",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "qlearn-lite",
+    "rl-logger",
+    "demo"
+  ],
+  "scripts": {
+    "build": "npm run build --workspaces --if-present",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "format": "prettier --write \"**/*.{ts,js,json,md}\" --ignore-path .gitignore",
+    "format:check": "prettier --check \"**/*.{ts,js,json,md}\" --ignore-path .gitignore",
+    "clean": "npm run clean --workspaces --if-present",
+    "knight": "npm run knight -w demo",
+    "qtable": "npm run qtable -w demo"
+  },
+  "devDependencies": {
+    "@types/jest": "^30.0.0",
+    "@types/node": "^20.0.0",
+    "jest": "^30.1.3",
+    "prettier": "^3.0.0",
+    "ts-jest": "^29.4.1",
+    "typescript": "^5.6.2"
+  }
+}

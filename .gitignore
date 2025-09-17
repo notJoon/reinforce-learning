@@ -3,11 +3,20 @@ node_modules/
 .pnp
 .pnp.js
 
+# Package lock files in workspace packages (only root lock file should exist)
+*/package-lock.json
+
 # Build outputs
 dist/
 build/
 out/
 *.tsbuildinfo
+
+# TypeScript build files in src
+src/**/*.js
+src/**/*.js.map
+src/**/*.d.ts
+!src/**/*.config.js
 
 # Testing
 coverage/
@@ -48,6 +57,13 @@ qlearn-lite/*.png
 !qlearn-lite/package-lock.json
 !qlearn-lite/tsconfig.json
 !qlearn-lite/tsconfig.*.json
+
+# Demo generated files
+demo/generated/
+demo/*.json
+demo/*.png
+!demo/package.json
+!demo/tsconfig.json
 
 # Python
 __pycache__/

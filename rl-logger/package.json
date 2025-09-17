@@ -1,0 +1,25 @@
+{
+  "name": "rl-logger",
+  "version": "0.1.0",
+  "description": "JSONL trajectory logger for reinforcement learning",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc -p .",
+    "test": "cd .. && jest --selectProjects rl-logger",
+    "format": "cd .. && prettier --write \"rl-logger/**/*.{ts,js,json}\" --ignore-path .gitignore",
+    "format:check": "cd .. && prettier --check \"rl-logger/**/*.{ts,js,json}\" --ignore-path .gitignore"
+  },
+  "keywords": [
+    "reinforcement-learning",
+    "logging",
+    "jsonl",
+    "trajectory"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^24.3.1"
+  }
+}

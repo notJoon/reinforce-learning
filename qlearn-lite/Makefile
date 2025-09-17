@@ -27,8 +27,6 @@ all: build
 build:
 	@echo "Building TypeScript files..."
 	$(NPM) run build
-	@echo "Fixing ES module imports..."
-	@sed -i '' 's/from "\.\/\([^"]*\)"/from ".\/\1.js"/g' $(DIST_DIR)/*.js
 	@echo "Build complete!"
 
 # Clean build artifacts

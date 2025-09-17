@@ -12,18 +12,25 @@ const __dirname = dirname(__filename);
 async function listExamples() {
   const examplesDir = join(dirname(__dirname), 'examples');
   const examples = [];
-  
+
   try {
     const items = await readdir(examplesDir);
-    
+
     for (const item of items) {
       const itemPath = join(examplesDir, item);
       const stats = await stat(itemPath);
-      
+
       if (stats.isDirectory()) {
         // Check if directory contains an entry point file
-        const possibleFiles = [`${item}.ts`, `${item}.mjs`, `${item}.js`, 'index.ts', 'index.mjs', 'index.js'];
-        
+        const possibleFiles = [
+          `${item}.ts`,
+          `${item}.mjs`,
+          `${item}.js`,
+          'index.ts',
+          'index.mjs',
+          'index.js',
+        ];
+
         for (const file of possibleFiles) {
           try {
             await stat(join(itemPath, file));
@@ -41,13 +48,13 @@ async function listExamples() {
   } catch (err) {
     console.error('Error listing examples:', err.message);
   }
-  
+
   return examples;
 }
 
 async function findExampleFile(name) {
   const examplesDir = join(dirname(__dirname), 'examples');
-  
+
   // Check if it's a directory with an entry point
   const dirPath = join(examplesDir, name);
   try {
@@ -60,9 +67,9 @@ async function findExampleFile(name) {
         join(dirPath, `${name}.js`),
         join(dirPath, 'index.ts'),
         join(dirPath, 'index.mjs'),
-        join(dirPath, 'index.js')
+        join(dirPath, 'index.js'),
       ];
-      
+
       for (const file of possibleFiles) {
         try {
           await stat(file);
@@ -75,7 +82,7 @@ async function findExampleFile(name) {
   } catch {
     // Not a directory, check for single file
   }
-  
+
   // Check for single file example
   const possibleExtensions = ['.ts', '.mjs', '.js'];
   for (const ext of possibleExtensions) {
@@ -87,7 +94,7 @@ async function findExampleFile(name) {
       // File doesn't exist, try next extension
     }
   }
-  
+
   throw new Error(`Example "${name}" not found`);
 }
 
@@ -95,9 +102,9 @@ async function runExample(name, additionalArgs = []) {
   try {
     const file = await findExampleFile(name);
     const ext = file.split('.').pop();
-    
+
     let command, args;
-    
+
     if (ext === 'ts') {
       command = 'npx';
       args = ['tsx', file, ...additionalArgs];
@@ -107,24 +114,24 @@ async function runExample(name, additionalArgs = []) {
     } else {
       throw new Error(`Unsupported file extension: ${ext}`);
     }
-    
+
     console.log(`Running example: ${name}`);
     console.log(`File: ${file}`);
     if (additionalArgs.length > 0) {
       console.log(`Arguments: ${additionalArgs.join(' ')}`);
     }
     console.log(`Command: ${command} ${args.join(' ')}\n`);
-    
-    const child = spawn(command, args, { 
+
+    const child = spawn(command, args, {
       stdio: 'inherit',
-      cwd: __dirname
+      cwd: __dirname,
     });
-    
+
     child.on('error', (err) => {
       console.error(`Failed to run example: ${err.message}`);
       process.exit(1);
     });
-    
+
     child.on('exit', (code) => {
       process.exit(code || 0);
     });
@@ -137,7 +144,7 @@ async function runExample(name, additionalArgs = []) {
 
 async function main() {
   const args = process.argv.slice(2);
-  
+
   if (args.length === 0 || args[0] === '--help' || args[0] === '-h') {
     const examples = await listExamples();
     console.log('Usage: npm run example <name> [args...]');
@@ -146,22 +153,22 @@ async function main() {
     console.log('  npm run example knight           # Run with default settings');
     console.log('  npm run example knight 8         # Run with 8x8 board');
     console.log('  npm run example knight 6 10000   # 6x6 board, 10000 episodes\n');
-    
+
     if (examples.length > 0) {
       console.log('Available examples:');
-      examples.forEach(e => console.log(`  - ${e}`));
+      examples.forEach((e) => console.log(`  - ${e}`));
     } else {
       console.log('No examples found.');
     }
     return;
   }
-  
+
   const exampleName = args[0];
   const additionalArgs = args.slice(1);
   await runExample(exampleName, additionalArgs);
 }
 
-main().catch(err => {
+main().catch((err) => {
   console.error(err);
   process.exit(1);
 });

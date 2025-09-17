@@ -1,0 +1,24 @@
+{
+  "name": "rl-demo",
+  "version": "1.0.0",
+  "description": "Reinforcement learning demos using qlearn-lite",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "knight": "node dist/knight/knight.js",
+    "dev:knight": "tsx knight/knight.ts",
+    "gridworld": "node dist/gridworld/gridworld.js",
+    "dev:gridworld": "tsx gridworld/gridworld.ts",
+    "format": "prettier --write \"**/*.{ts,js,json,md}\" --ignore-path .gitignore",
+    "format:check": "prettier --check \"**/*.{ts,js,json,md}\" --ignore-path .gitignore"
+  },
+  "dependencies": {
+    "qlearn-lite": "file:../qlearn-lite",
+    "rl-logger": "file:../rl-logger"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "tsx": "^4.7.0",
+    "typescript": "^5.6.2"
+  }
+}

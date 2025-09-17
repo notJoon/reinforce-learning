@@ -9,6 +9,7 @@ This is a TypeScript-based reinforcement learning playground containing `qlearn-
 ## Build Commands
 
 ### Development Setup
+
 ```bash
 # Install dependencies (from qlearn-lite directory)
 cd qlearn-lite
@@ -22,6 +23,7 @@ npm run example:knight
 ```
 
 ### Nix Development Environment
+
 ```bash
 # Enter development shell with Node.js, TypeScript, and npm
 nix develop
@@ -41,7 +43,7 @@ The qlearn-lite library implements tabular Q-learning with a modular architectur
 - **QLearningAgent** (`agent.ts`): Main agent class that:
   - Performs Q-learning updates with configurable α (learning rate) and γ (discount)
   - Supports potential-based reward shaping (Ng et al., 1999)
-  - Provides `train()` for learning and `rollOut()` for greedy evaluation
+  - Provides `train()` for learning and `rollout()` for greedy evaluation
 - **Policy** (`policy.ts`): Action selection strategies (ε-greedy, softmax, etc.)
 - **Schedules** (`schedules.ts`): Parameter scheduling (e.g., epsilon decay)
 
