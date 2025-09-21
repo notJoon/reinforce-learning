@@ -37,13 +37,10 @@ export interface TimeoutInfo {
  * Manages timeout tracking for RL training
  */
 export class TimeoutManager {
-  private config: TimeoutConfig;
-  private episodeSteps: number = 0;
-  private totalSteps: number = 0;
+  private episodeSteps = 0;
+  private totalSteps = 0;
 
-  constructor(config: TimeoutConfig) {
-    this.config = config;
-  }
+  constructor(private readonly config: TimeoutConfig) {}
 
   /**
    * Increment step counters
@@ -64,20 +61,18 @@ export class TimeoutManager {
    * Check if episode timeout is reached
    */
   isEpisodeTimeout(): boolean {
-    if (this.config.maxStepsPerEpisode === undefined) {
-      return false;
-    }
-    return this.episodeSteps >= this.config.maxStepsPerEpisode;
+    return this.checkTimeout(this.config.maxStepsPerEpisode, this.episodeSteps);
   }
 
   /**
    * Check if total timeout is reached
    */
   isTotalTimeout(): boolean {
-    if (this.config.maxTotalSteps === undefined) {
-      return false;
-    }
-    return this.totalSteps >= this.config.maxTotalSteps;
+    return this.checkTimeout(this.config.maxTotalSteps, this.totalSteps);
+  }
+
+  private checkTimeout(limit: number | undefined, current: number): boolean {
+    return limit !== undefined && current >= limit;
   }
 
   /**
@@ -108,20 +103,22 @@ export class TimeoutManager {
     const isEpisodeTimeout = this.isEpisodeTimeout();
     const isTotalTimeout = this.isTotalTimeout();
 
-    let reason: 'episode_timeout' | 'total_timeout' | undefined;
-    if (isTotalTimeout) {
-      reason = 'total_timeout';
-    } else if (isEpisodeTimeout) {
-      reason = 'episode_timeout';
-    }
-
     return {
       episodeSteps: this.episodeSteps,
       totalSteps: this.totalSteps,
       isEpisodeTimeout,
       isTotalTimeout,
-      reason,
+      reason: this.getTimeoutReason(isEpisodeTimeout, isTotalTimeout),
     };
+  }
+
+  private getTimeoutReason(
+    isEpisodeTimeout: boolean,
+    isTotalTimeout: boolean,
+  ): 'episode_timeout' | 'total_timeout' | undefined {
+    if (isTotalTimeout) return 'total_timeout';
+    if (isEpisodeTimeout) return 'episode_timeout';
+    return undefined;
   }
 }
 
@@ -129,7 +126,7 @@ export class TimeoutManager {
  * High-level timeout policy for training loops
  */
 export class TimeoutPolicy {
-  private manager: TimeoutManager;
+  private readonly manager: TimeoutManager;
 
   constructor(config: TimeoutConfig) {
     this.manager = new TimeoutManager(config);

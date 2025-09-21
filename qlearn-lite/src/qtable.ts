@@ -1,31 +1,33 @@
-import { Encoder } from './types';
+import { Encoder } from './types.js';
 
 export class QTable<S, A> {
-  private readonly sEnc: Encoder<S>;
-  private readonly aEnc: Encoder<A>;
   private readonly store = new Map<string, Map<string, number>>();
 
-  constructor(sEnc: Encoder<S>, aEnc: Encoder<A>) {
-    this.sEnc = sEnc;
-    this.aEnc = aEnc;
-  }
+  constructor(
+    private readonly sEnc: Encoder<S>,
+    private readonly aEnc: Encoder<A>,
+  ) {}
 
   get(s: S, a: A): number {
-    const sk = this.sEnc(s);
-    const ak = this.aEnc(a);
-    return this.store.get(sk)?.get(ak) ?? 0;
+    const stateKey = this.sEnc(s);
+    const actionKey = this.aEnc(a);
+    return this.store.get(stateKey)?.get(actionKey) ?? 0;
   }
 
   set(s: S, a: A, value: number): void {
-    const sk = this.sEnc(s);
-    const ak = this.aEnc(a);
+    const stateKey = this.sEnc(s);
+    const actionKey = this.aEnc(a);
+    const row = this.getOrCreateRow(stateKey);
+    row.set(actionKey, value);
+  }
 
-    let row = this.store.get(sk);
+  private getOrCreateRow(stateKey: string): Map<string, number> {
+    let row = this.store.get(stateKey);
     if (!row) {
       row = new Map<string, number>();
-      this.store.set(sk, row);
+      this.store.set(stateKey, row);
     }
-    row.set(ak, value);
+    return row;
   }
 
   /** max_a' Q(s, a') over provided actions; returns {a*, q*} or undefined. */
@@ -55,15 +57,11 @@ export class QTable<S, A> {
 
   /** Get max Q-value for a state across all stored actions */
   getStateMaxQ(s: S): number {
-    const sk = this.sEnc(s);
-    const row = this.store.get(sk);
+    const stateKey = this.sEnc(s);
+    const row = this.store.get(stateKey);
     if (!row || row.size === 0) return 0;
 
-    let maxQ = -Infinity;
-    for (const q of row.values()) {
-      if (q > maxQ) maxQ = q;
-    }
-    return maxQ;
+    return Math.max(...row.values());
   }
 
   /** Get all states that have Q-values stored */

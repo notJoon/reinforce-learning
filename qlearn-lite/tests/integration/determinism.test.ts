@@ -4,7 +4,7 @@
 
 import { QLearningAgent } from '../../src/agent';
 import { Policy, DiscreteEnv } from '../../src/types';
-import { ConstantEpsilon } from '../../src/policy';
+import { ConstantEpsilon } from '../../src/schedules';
 import { seedRandom } from '../../src/gym-env';
 import { JSONLLogger, TrajectoryEntry, RunMetadata } from '../../../rl-logger/src';
 import * as fs from 'fs';

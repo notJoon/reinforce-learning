@@ -1,70 +1,55 @@
-import { Policy } from './types';
+import { Policy } from './types.js';
 
-/** ε schedule interface */
-export interface EpsilonSchedule {
-  epsilon(episode: number): number;
+import { EpsilonSchedule } from './schedules.js';
+
+export interface EpisodeAwarePolicy<S, A> extends Policy<S, A> {
+  currentEpisode: number;
 }
 
-/** Linear decay ε schedule: ε = max(ε_end, ε_start - k*episode) */
-export class LinearEpsilon implements EpsilonSchedule {
-  constructor(
-    private readonly epsStart: number,
-    private readonly epsEnd: number,
-    private readonly decayPerEpisode: number,
-  ) {}
-  epsilon(episode: number): number {
-    return Math.max(this.epsEnd, this.epsStart - episode * this.decayPerEpisode);
-  }
-}
+export class EpsilonGreedy<S, A> implements EpisodeAwarePolicy<S, A> {
+  public currentEpisode = 0;
 
-/** Exponential decay schedule: ε = ε_end + (ε_start-ε_end)*exp(-rate*episode) */
-export class ExpEpsilon implements EpsilonSchedule {
-  constructor(
-    private readonly epsStart: number,
-    private readonly epsEnd: number,
-    private readonly rate: number,
-  ) {}
-  epsilon(episode: number): number {
-    return this.epsEnd + (this.epsStart - this.epsEnd) * Math.exp(-this.rate * episode);
-  }
-}
-
-/** Constant epsilon schedule */
-export class ConstantEpsilon implements EpsilonSchedule {
-  constructor(private readonly eps: number) {}
-  epsilon(_episode: number): number {
-    return this.eps;
-  }
-}
-
-export class EpsilonGreedy<S, A> implements Policy<S, A> {
   constructor(
     private readonly schedule: EpsilonSchedule,
     private readonly rng: () => number = Math.random,
   ) {}
 
-  /** Should be updated each episode by caller */
-  public currentEpisode = 0;
-
   select(state: S, legal: A[], q: (s: S, a: A) => number): A | undefined {
-    if (legal.length === 0) return undefined; /* terminal state */
+    if (legal.length === 0) return undefined;
+
     const eps = this.schedule.epsilon(this.currentEpisode);
-    if (this.rng() < eps) {
-      return legal[Math.floor(this.rng() * legal.length)]; // explore
+    if (this.shouldExplore(eps)) {
+      return this.selectRandom(legal);
     }
 
-    // greedy tie-break
-    // prefer smaller encoded action order (stable)
+    return this.selectGreedy(state, legal, q);
+  }
+
+  getEpsilon(): number {
+    return this.schedule.epsilon(this.currentEpisode);
+  }
+
+  private shouldExplore(epsilon: number): boolean {
+    return this.rng() < epsilon;
+  }
+
+  private selectRandom(legal: A[]): A {
+    return legal[Math.floor(this.rng() * legal.length)];
+  }
+
+  private selectGreedy(state: S, legal: A[], q: (s: S, a: A) => number): A {
     let best = legal[0];
     let bestQ = q(state, best);
+
     for (let i = 1; i < legal.length; i++) {
-      const a = legal[i];
-      const qa = q(state, a);
-      if (qa > bestQ) {
-        best = a;
-        bestQ = qa;
+      const action = legal[i];
+      const qValue = q(state, action);
+      if (qValue > bestQ) {
+        best = action;
+        bestQ = qValue;
       }
     }
-    return best; // exploit
+
+    return best;
   }
 }

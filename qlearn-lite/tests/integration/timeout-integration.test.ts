@@ -4,7 +4,8 @@
 
 import { QLearningAgent } from '../../src/agent';
 import { DiscreteEnv } from '../../src/types';
-import { EpsilonGreedy, ConstantEpsilon } from '../../src/policy';
+import { EpsilonGreedy } from '../../src/policy';
+import { ConstantEpsilon } from '../../src/schedules';
 import { TimeoutManager } from '../../src/timeout';
 
 /**

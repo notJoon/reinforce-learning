@@ -103,35 +103,28 @@ export function calculateReward(options: CalculateRewardOptions): number {
  * Get reward for a specific event
  */
 function getEventReward(config: RewardConfig, event: RewardEvent, shapingEnabled: boolean): number {
-  switch (event) {
-    case 'solve':
-      return config.solve;
-    case 'invalid':
-      return config.invalid;
-    case 'timeout':
-      return config.timeout;
-    case 'step':
-      // Step cost only applies when shaping is enabled
-      return shapingEnabled ? config.stepCost : 0;
-    default:
-      return 0;
-  }
+  const rewardMap: Record<RewardEvent, number> = {
+    solve: config.solve,
+    invalid: config.invalid,
+    timeout: config.timeout,
+    step: shapingEnabled ? config.stepCost : 0,
+  };
+  return rewardMap[event] ?? 0;
 }
 
 /**
  * Validate a reward configuration
  */
 export function validateRewardConfig(config: RewardConfig): void {
-  if (config.solve <= 0) {
-    throw new Error('solve reward must be positive');
-  }
-  if (config.invalid > 0) {
-    throw new Error('invalid penalty must be non-positive');
-  }
-  if (config.timeout > 0) {
-    throw new Error('timeout penalty must be non-positive');
-  }
-  if (config.stepCost > 0) {
-    throw new Error('step cost must be non-positive');
+  const validations: Array<[boolean, string]> = [
+    [config.solve > 0, 'solve reward must be positive'],
+    [config.invalid <= 0, 'invalid penalty must be non-positive'],
+    [config.timeout <= 0, 'timeout penalty must be non-positive'],
+    [config.stepCost <= 0, 'step cost must be non-positive'],
+  ];
+
+  const failedValidation = validations.find(([isValid]) => !isValid);
+  if (failedValidation) {
+    throw new Error(failedValidation[1]);
   }
 }

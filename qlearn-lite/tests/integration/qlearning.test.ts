@@ -5,7 +5,8 @@
 
 import { QLearningAgent } from '../../src/agent';
 import { DiscreteEnv } from '../../src/types';
-import { EpsilonGreedy, ExpEpsilon, LinearEpsilon } from '../../src/policy';
+import { EpsilonGreedy } from '../../src/policy';
+import { ExponentialEpsilon, LinearEpsilon } from '../../src/schedules';
 
 /**
  * Simple deterministic grid world for testing convergence
@@ -129,7 +130,7 @@ describe('Q-Learning Integration Tests', () => {
 
     it('should improve performance over time', () => {
       const env = new DeterministicGridWorld();
-      const policy = new EpsilonGreedy(new ExpEpsilon(1.0, 0.01, 0.01));
+      const policy = new EpsilonGreedy(new ExponentialEpsilon(1.0, 0.01, 0.01));
       const agent = new QLearningAgent(env, policy, { alpha: 0.2, gamma: 0.95 });
 
       const episodeSteps: number[] = [];

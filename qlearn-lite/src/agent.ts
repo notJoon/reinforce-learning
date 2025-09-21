@@ -1,4 +1,5 @@
-import { QTable } from './qtable';
+import { EpisodeAwarePolicy } from './policy.js';
+import { QTable } from './qtable.js';
 import {
   DiscreteEnv,
   Encoder,
@@ -6,8 +7,8 @@ import {
   QLearningConfig,
   RolloutOptions,
   TrainOptions,
-} from './types';
-import { defaultEncoder } from './utils';
+} from './types.js';
+import { defaultEncoder } from './utils.js';
 
 export class QLearningAgent<S, A> {
   readonly q: QTable<S, A>;
@@ -28,46 +29,86 @@ export class QLearningAgent<S, A> {
     const { episodes, maxStepsPerEpisode = Infinity, onEpisodeEnd, onUpdate } = opts;
 
     for (let ep = 0; ep < episodes; ep++) {
-      // let policy know current episode, if it cares
-      (this.policy as any).currentEpisode = ep;
-
-      let s = this.env.reset();
-      const phiS = this.env.potential?.(s) ?? 0;
-
-      let totalReward = 0;
-      let steps = 0;
-
-      for (; steps < maxStepsPerEpisode; steps++) {
-        const legal = this.env.actions(s);
-        const a = this.policy.select(s, legal, this.qValue);
-        if (a === undefined) break; // terminal state
-
-        const { nextState: s2, reward, done } = this.env.step(s, a);
-
-        // potential-based reward shaping (Ng et al., 1999)
-        // [1] https://people.eecs.berkeley.edu/~pabbeel/cs287-fa09/readings/NgHaradaRussell-shaping-ICML1999.pdf
-        const shaped =
-          reward +
-          this.cfg.gamma * (this.env.potential?.(s2) ?? 0) -
-          (this.env.potential?.(s) ?? 0);
-
-        // Q-Learning update
-        // Q(s,a) ← Q(s,a) + α [ r' + γ max_a' Q(s',a') − Q(s,a) ]
-        const oldQ = this.q.get(s, a);
-        const maxNext = this.q.maxOverActions(s2, this.env.actions(s2))?.q ?? 0;
-        const target = shaped + this.cfg.gamma * maxNext;
-        const newQ = oldQ + this.cfg.alpha * (target - oldQ);
-        this.q.set(s, a, newQ);
-
-        onUpdate?.({ state: s, action: a, reward, nextState: s2, done, oldQ, newQ });
-
-        totalReward += reward;
-        s = s2;
-        if (done) break; // episode ends
-      }
-
-      onEpisodeEnd?.({ episode: ep, steps, totalReward, terminated: steps < maxStepsPerEpisode });
+      this.updatePolicyEpisode(ep);
+      const { totalReward, steps } = this.runEpisode(maxStepsPerEpisode, onUpdate);
+      onEpisodeEnd?.({
+        episode: ep,
+        steps,
+        totalReward,
+        terminated: steps < maxStepsPerEpisode,
+      });
     }
+  }
+
+  private updatePolicyEpisode(episode: number): void {
+    if (this.isEpisodeAwarePolicy(this.policy)) {
+      this.policy.currentEpisode = episode;
+    }
+  }
+
+  private isEpisodeAwarePolicy(policy: Policy<S, A>): policy is EpisodeAwarePolicy<S, A> {
+    return 'currentEpisode' in policy;
+  }
+
+  private runEpisode(
+    maxSteps: number,
+    onUpdate?: TrainOptions<S, A>['onUpdate'],
+  ): { totalReward: number; steps: number } {
+    let state = this.env.reset();
+    let totalReward = 0;
+    let steps = 0;
+
+    for (; steps < maxSteps; steps++) {
+      const legal = this.env.actions(state);
+      const action = this.policy.select(state, legal, this.qValue);
+      if (action === undefined) break;
+
+      const { nextState, reward, done } = this.env.step(state, action);
+      const shapedReward = this.getShapedReward(state, nextState, reward);
+
+      this.updateQValue(state, action, nextState, shapedReward, reward, done, onUpdate);
+
+      totalReward += reward;
+      state = nextState;
+      if (done) break;
+    }
+
+    return { totalReward, steps };
+  }
+
+  private getShapedReward(state: S, nextState: S, reward: number): number {
+    if (!this.env.potential) return reward;
+
+    const currentPotential = this.env.potential(state);
+    const nextPotential = this.env.potential(nextState);
+    return reward + this.cfg.gamma * nextPotential - currentPotential;
+  }
+
+  private updateQValue(
+    state: S,
+    action: A,
+    nextState: S,
+    shapedReward: number,
+    originalReward: number,
+    done: boolean,
+    onUpdate?: TrainOptions<S, A>['onUpdate'],
+  ): void {
+    const oldQ = this.q.get(state, action);
+    const maxNext = this.q.maxOverActions(nextState, this.env.actions(nextState))?.q ?? 0;
+    const target = shapedReward + this.cfg.gamma * maxNext;
+    const newQ = oldQ + this.cfg.alpha * (target - oldQ);
+
+    this.q.set(state, action, newQ);
+
+    onUpdate?.({
+      state,
+      action,
+      reward: originalReward,
+      nextState,
+      done,
+      oldQ,
+      newQ,
+    });
   }
 
   /**

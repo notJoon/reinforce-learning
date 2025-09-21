@@ -5,7 +5,8 @@
 import { QTable } from '../../src/qtable';
 import { QLearningAgent } from '../../src/agent';
 import { DiscreteEnv } from '../../src/types';
-import { EpsilonGreedy, LinearEpsilon } from '../../src/policy';
+import { EpsilonGreedy } from '../../src/policy';
+import { LinearEpsilon } from '../../src/schedules';
 
 /**
  * Minimal test environment

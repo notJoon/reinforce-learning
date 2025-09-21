@@ -80,7 +80,7 @@ agent.train({
         `Episode ${episode + 1}/${EPISODES} | ` +
           `Avg Reward: ${avgReward.toFixed(1)} | ` +
           `Success Rate: ${recentSuccess}/10 | ` +
-          `ε: ${policy.schedule.epsilon(episode).toFixed(3)}`,
+          `ε: ${policy.getEpsilon().toFixed(3)}`,
       );
     }
   },

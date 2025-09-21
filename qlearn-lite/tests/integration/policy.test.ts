@@ -2,7 +2,8 @@
  * Integration tests for policy exploration/exploitation behavior
  */
 
-import { EpsilonGreedy, LinearEpsilon, ExpEpsilon } from '../../src/policy';
+import { EpsilonGreedy } from '../../src/policy';
+import { LinearEpsilon, ExponentialEpsilon } from '../../src/schedules';
 import { Policy } from '../../src/types';
 
 describe('Policy Exploration/Exploitation Tests', () => {
@@ -52,7 +53,7 @@ describe('Policy Exploration/Exploitation Tests', () => {
 
     it('should respect different epsilon schedules', () => {
       const linearSchedule = new LinearEpsilon(1.0, 0.0, 0.01);
-      const expSchedule = new ExpEpsilon(1.0, 0.0, 0.1);
+      const expSchedule = new ExponentialEpsilon(1.0, 0.0, 0.1);
 
       // Compare epsilon decay
       const episodes = [0, 10, 20, 50, 100];
