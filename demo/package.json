@@ -14,7 +14,8 @@
   },
   "dependencies": {
     "qlearn-lite": "file:../qlearn-lite",
-    "rl-logger": "file:../rl-logger"
+    "rl-logger": "file:../rl-logger",
+    "rl-dashboard": "file:../dashboard"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",
