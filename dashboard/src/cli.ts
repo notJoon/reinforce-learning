@@ -30,8 +30,8 @@ if (!existsSync(scriptPath)) {
   process.exit(1);
 }
 
-console.log(`Starting dashboard for: ${scriptPath}`);
-console.log('Note: The script must be modified to use DashboardWrapper\n');
+console.log(`Starting interactive dashboard for: ${scriptPath}`);
+console.log('Note: The script must be modified to use InteractiveWrapper\n');
 
 // Run the script with tsx
 const child = spawn('npx', ['tsx', scriptPath, ...args.slice(1)], {

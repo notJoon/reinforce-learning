@@ -1,5 +1,15 @@
-import { InteractiveDashboard } from './interactive-dashboard.js';
-import { TrainingMetrics, ControlCommand, TrainingControl } from './types.js';
+import { InteractiveDashboard } from './dashboard.js';
+import {
+  TrainingMetrics,
+  ControlCommand,
+  TrainingControl,
+  DashboardConfig,
+  RLAgent,
+  DiscreteEnvironment,
+  InteractiveAgent,
+  InteractiveTrainingConfig,
+  EpisodeInfo,
+} from './types.js';
 
 export class InteractiveWrapper {
   private dashboard: InteractiveDashboard;
@@ -17,10 +27,10 @@ export class InteractiveWrapper {
   private targetEpisodes: number = 100;
 
   // Reference to agent for parameter updates
-  private agent: any;
-  private env: any;
+  private agent: RLAgent<unknown, unknown> | null = null;
+  private env: DiscreteEnvironment<unknown, unknown> | null = null;
 
-  constructor(dashboardConfig?: any) {
+  constructor(dashboardConfig?: DashboardConfig) {
     this.dashboard = new InteractiveDashboard(dashboardConfig);
 
     // Set up callbacks
@@ -37,21 +47,25 @@ export class InteractiveWrapper {
       case 'alpha':
         if (this.agent.alpha !== undefined) {
           this.agent.alpha = value;
+          this.dashboard.log(`Learning rate (alpha) updated: ${value.toFixed(3)}`);
         }
         break;
       case 'gamma':
         if (this.agent.gamma !== undefined) {
           this.agent.gamma = value;
+          this.dashboard.log(`Discount factor (gamma) updated: ${value.toFixed(3)}`);
         }
         break;
       case 'epsilon':
         if (this.agent.policy && this.agent.policy.setEpsilon) {
           this.agent.policy.setEpsilon(value);
+          this.dashboard.log(`Exploration rate (epsilon) updated: ${value.toFixed(3)}`);
         }
         break;
       case 'epsilonDecay':
         if (this.agent.policy && this.agent.policy.setDecay) {
           this.agent.policy.setDecay(value);
+          this.dashboard.log(`Epsilon decay updated: ${value.toFixed(4)}`);
         }
         break;
     }
@@ -83,14 +97,16 @@ export class InteractiveWrapper {
   /**
    * Wraps the agent's train method with interactive controls
    */
-  wrapAgent<S, A>(agent: any, env?: any): any {
+  wrapAgent<S, A>(agent: RLAgent<S, A>, env?: DiscreteEnvironment<S, A>): InteractiveAgent<S, A> {
     const wrapper = this;
-    this.agent = agent;
-    this.env = env;
+    this.agent = agent as RLAgent<unknown, unknown>;
+    this.env = (env as DiscreteEnvironment<unknown, unknown>) || null;
 
     const originalTrain = agent.train.bind(agent);
 
-    agent.trainInteractive = async function (config: any) {
+    (agent as InteractiveAgent<S, A>).trainInteractive = async function (
+      config: InteractiveTrainingConfig,
+    ) {
       // Start dashboard
       wrapper.dashboard.start();
       wrapper.dashboard.log('Interactive training started');
@@ -125,31 +141,43 @@ export class InteractiveWrapper {
           episodesCompleted = 0;
           wrapper.currentEpisode = 0;
           wrapper.totalReward = 0;
+          wrapper.episodeReward = 0;
+          wrapper.currentStep = 0;
 
-          // Store current parameter values before reset
-          const currentAlpha = agent.alpha;
-          const currentGamma = agent.gamma;
-          const currentEpsilon = agent.policy?.getEpsilon ? agent.policy.getEpsilon() : undefined;
+          // Get current parameter values from dashboard (which may have been modified)
+          const dashboardParams = wrapper.dashboard.getControl().parameters;
+
+          // Apply dashboard parameters to agent
+          agent.alpha = dashboardParams.alpha;
+          agent.gamma = dashboardParams.gamma;
 
           // Reset Q-table if available
           if (agent.q && agent.q.reset) {
             agent.q.reset();
+            wrapper.dashboard.log('Q-table reset');
           }
 
-          // Reset policy but keep epsilon value
-          if (agent.policy && agent.policy.reset) {
-            agent.policy.reset();
-            // Restore epsilon after reset if it was modified
-            if (currentEpsilon !== undefined && agent.policy.setEpsilon) {
-              agent.policy.setEpsilon(currentEpsilon);
+          // Reset policy but apply current epsilon value from dashboard
+          if (agent.policy) {
+            if (agent.policy.reset) {
+              agent.policy.reset();
+            }
+            if (agent.policy.setEpsilon) {
+              agent.policy.setEpsilon(dashboardParams.epsilon);
+            }
+            if (agent.policy.setDecay && dashboardParams.epsilonDecay) {
+              agent.policy.setDecay(dashboardParams.epsilonDecay);
             }
           }
 
-          // Restore learning parameters
-          agent.alpha = currentAlpha;
-          agent.gamma = currentGamma;
-
-          wrapper.dashboard.log('Training reset - Q-table cleared, parameters retained');
+          wrapper.dashboard.log('Training reset with parameters:');
+          wrapper.dashboard.log(
+            `  Alpha: ${agent.alpha.toFixed(3)}, Gamma: ${agent.gamma.toFixed(3)}`,
+          );
+          wrapper.dashboard.log(
+            `  Epsilon: ${dashboardParams.epsilon.toFixed(3)}, Decay: ${dashboardParams.epsilonDecay?.toFixed(4) || 'N/A'}`,
+          );
+          wrapper.dashboard.log('Ready to train with new parameters!');
           continue;
         }
 
@@ -174,7 +202,7 @@ export class InteractiveWrapper {
         const episodeConfig = {
           episodes: 1,
           maxStepsPerEpisode: config.maxStepsPerEpisode || 100,
-          onEpisodeEnd: (info: any) => {
+          onEpisodeEnd: (info: EpisodeInfo) => {
             episodesCompleted++;
             wrapper.currentEpisode = episodesCompleted;
             wrapper.totalReward += info.totalReward;
@@ -251,9 +279,9 @@ export class InteractiveWrapper {
     };
 
     // Also keep the original train method
-    agent.trainOriginal = originalTrain;
+    (agent as InteractiveAgent<S, A>).trainOriginal = originalTrain;
 
-    return agent;
+    return agent as InteractiveAgent<S, A>;
   }
 
   private sleep(ms: number): Promise<void> {

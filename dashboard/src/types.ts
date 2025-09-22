@@ -58,3 +58,61 @@ export interface TrainingControl {
     epsilonDecay?: number;
   };
 }
+
+// Agent-related interfaces
+export interface RLPolicy<S, A> {
+  select(state: S, legal: A[], qval: (s: S, a: A) => number): A | undefined;
+  getEpsilon?(): number;
+  setEpsilon?(value: number): void;
+  getDecay?(): number;
+  setDecay?(value: number): void;
+  reset?(): void;
+}
+
+export interface QTableInterface<S, A> {
+  get(state: S, action: A): number;
+  set(state: S, action: A, value: number): void;
+  reset?(): void;
+}
+
+export interface RLAgent<S, A> {
+  alpha: number;
+  gamma: number;
+  policy?: RLPolicy<S, A>;
+  q?: QTableInterface<S, A>;
+  train(config: TrainingConfig<S, A>): void;
+}
+
+export interface TrainingConfig<S, A> {
+  episodes: number;
+  maxStepsPerEpisode: number;
+  onEpisodeEnd?: (info: EpisodeInfo) => void;
+  onUpdate?: (state: S, action: A, reward: number, nextState: S) => void;
+}
+
+export interface EpisodeInfo {
+  episode: number;
+  steps: number;
+  totalReward: number;
+  terminated: boolean;
+  truncated?: boolean;
+}
+
+export interface InteractiveAgent<S, A> extends RLAgent<S, A> {
+  trainInteractive(config: InteractiveTrainingConfig): Promise<void>;
+  trainOriginal?: (config: TrainingConfig<S, A>) => void;
+}
+
+export interface InteractiveTrainingConfig {
+  maxStepsPerEpisode: number;
+  targetEpisodes?: number;
+  onEpisodeEnd?: (info: EpisodeInfo) => void;
+  onUpdate?: (state: unknown, action: unknown, reward: number, nextState: unknown) => void;
+}
+
+export interface DiscreteEnvironment<S, A> {
+  reset(): S;
+  actions(state: S): A[];
+  step(state: S, action: A): { nextState: S; reward: number; done: boolean };
+  potential?(state: S): number;
+}
