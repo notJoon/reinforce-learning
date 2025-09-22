@@ -1,0 +1,58 @@
+# RL Dashboard Keyboard Bindings Configuration
+# Format: [modifiers+]key -> action [condition] # description
+# Modifiers: ctrl, alt, shift, meta
+# Conditions: !paused, !completed, commandMode, etc.
+
+# Control Commands
+space -> togglePause !completed # Pause/Resume training
+r -> reset # Reset training (clear Q-table)
+c -> toggleContinuousMode # Toggle continuous/fixed mode
+s -> stop # Stop training
+
+# Parameter Adjustments - Learning Rate (α)
+1 -> decreaseAlpha # Decrease learning rate by 0.01
+2 -> increaseAlpha # Increase learning rate by 0.01
+
+# Parameter Adjustments - Discount Factor (γ)
+3 -> decreaseGamma # Decrease discount by 0.01
+4 -> increaseGamma # Increase discount by 0.01
+
+# Parameter Adjustments - Exploration Rate (ε)
+5 -> decreaseEpsilon # Decrease epsilon by 0.05
+6 -> increaseEpsilon # Increase epsilon by 0.05
+
+# Parameter Adjustments - Decay Rate
+7 -> decreaseEpsilonDecay # Decrease decay by 0.001
+8 -> increaseEpsilonDecay # Increase decay by 0.001
+
+# Episode Control
++ -> increaseEpisodes # Increase target episodes by 10
+= -> increaseEpisodes # Alternative for +
+- -> decreaseEpisodes # Decrease target episodes by 10
+_ -> decreaseEpisodes # Alternative for -
+* -> doubleEpisodes # Double target episodes
+
+# Quick Adjustments with Shift
+shift+1 -> decreaseAlphaLarge # Decrease α by 0.1
+shift+2 -> increaseAlphaLarge # Increase α by 0.1
+shift+5 -> decreaseEpsilonLarge # Decrease ε by 0.2
+shift+6 -> increaseEpsilonLarge # Increase ε by 0.2
+
+# Navigation
+tab -> focusNext # Focus next widget
+shift+tab -> focusPrevious # Focus previous widget
+
+# Command Mode
+: -> enterCommandMode # Enter command mode
+escape -> exitCommandMode commandMode # Exit command mode
+ctrl+c -> forceQuit # Force quit application
+
+# Quick Actions
+ctrl+s -> saveState # Save current state
+ctrl+l -> loadState # Load saved state
+ctrl+r -> quickReset !completed # Quick reset without confirmation
+
+# View Controls
+h -> toggleHelp # Toggle help panel
+i -> toggleInfo # Toggle info panel
+g -> toggleGraphs # Toggle graphs visibility

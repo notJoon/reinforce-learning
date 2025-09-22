@@ -38,6 +38,23 @@ module.exports = {
         '!<rootDir>/rl-logger/src/**/index.ts',
       ],
     },
+    {
+      displayName: 'dashboard',
+      testMatch: ['<rootDir>/dashboard/tests/**/*.test.ts'],
+      preset: 'ts-jest',
+      testEnvironment: 'node',
+      extensionsToTreatAsEsm: ['.ts'],
+      moduleFileExtensions: ['ts', 'js'],
+      transform: {
+        '^.+\\.tsx?$': ['ts-jest', {
+          useESM: true,
+        }],
+      },
+      collectCoverageFrom: [
+        '<rootDir>/dashboard/src/**/*.ts',
+        '!<rootDir>/dashboard/src/**/index.ts',
+      ],
+    },
   ],
   coverageDirectory: '<rootDir>/coverage',
   coverageReporters: ['text', 'lcov', 'html'],

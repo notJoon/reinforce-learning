@@ -20,9 +20,7 @@ const env = createGridWorld({
   enablePotentialShaping: false,
 });
 
-const policy = new EpsilonGreedy<GridPos, GridAction>(
-  new LinearEpsilon(1.0, 0.1, 0.9 / EPISODES),
-);
+const policy = new EpsilonGreedy<GridPos, GridAction>(new LinearEpsilon(1.0, 0.1, 0.9 / EPISODES));
 
 const agent = new QLearningAgent(
   env,
@@ -37,7 +35,7 @@ console.log('Starting dashboard test...');
 const dashboardWrapper = new DashboardWrapper({
   refreshRate: 250,
   historyLength: 50,
-  movingAverageWindow: 5
+  movingAverageWindow: 5,
 });
 
 const agentWithDashboard = dashboardWrapper.wrapAgent(agent);

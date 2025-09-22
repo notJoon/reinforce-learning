@@ -10,7 +10,7 @@ import { DashboardWrapper } from 'rl-dashboard';
 
 // Grid world parameters
 const GRID_SIZE = 5;
-const EPISODES = 500;  // More episodes to see the dashboard in action
+const EPISODES = 500; // More episodes to see the dashboard in action
 const MAX_STEPS_PER_EPISODE = 100;
 
 // Q-learning parameters
@@ -45,7 +45,7 @@ const agent = new QLearningAgent(
 const dashboardWrapper = new DashboardWrapper({
   refreshRate: 100,
   historyLength: 200,
-  movingAverageWindow: 20
+  movingAverageWindow: 20,
 });
 
 const agentWithDashboard = dashboardWrapper.wrapAgent(agent);
@@ -56,7 +56,5 @@ agentWithDashboard.train({
   maxStepsPerEpisode: MAX_STEPS_PER_EPISODE,
 });
 
-// Keep the dashboard open for a moment to see final stats
-setTimeout(() => {
-  console.log('\n\nTraining completed! Press Ctrl+C to exit.');
-}, 1000);
+// Dashboard will stay open until user quits
+// The dashboard will show "Press q or Ctrl+C to exit" message

@@ -8,7 +8,12 @@
     "dev": "tsc --watch",
     "dashboard": "node dist/cli.js"
   },
-  "keywords": ["reinforcement-learning", "dashboard", "cli", "monitoring"],
+  "keywords": [
+    "reinforcement-learning",
+    "dashboard",
+    "cli",
+    "monitoring"
+  ],
   "author": "",
   "license": "ISC",
   "description": "Real-time monitoring dashboard for reinforcement learning training",

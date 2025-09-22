@@ -36,7 +36,7 @@ console.log('Note: The script must be modified to use DashboardWrapper\n');
 // Run the script with tsx
 const child = spawn('npx', ['tsx', scriptPath, ...args.slice(1)], {
   stdio: 'inherit',
-  env: { ...process.env, USE_DASHBOARD: 'true' }
+  env: { ...process.env, USE_DASHBOARD: 'true' },
 });
 
 child.on('error', (err) => {
