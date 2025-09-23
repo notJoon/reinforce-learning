@@ -1,4 +1,12 @@
 /**
+ * Result type for command processing
+ */
+export interface CommandResult {
+  readonly success: boolean;
+  readonly message?: string;
+}
+
+/**
  * Processes command-line style commands
  */
 export class CommandProcessor {
@@ -23,7 +31,7 @@ export class CommandProcessor {
     this.commandAliases.set(alias, command);
   }
 
-  processCommand(input: string): { success: boolean; message?: string } {
+  processCommand(input: string): CommandResult {
     const trimmed = input.trim();
 
     // Empty command
@@ -41,9 +49,10 @@ export class CommandProcessor {
         handler();
         return { success: true };
       } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : String(error);
         return {
           success: false,
-          message: `Command failed: ${error}`,
+          message: `Command failed: ${errorMessage}`,
         };
       }
     }
@@ -67,5 +76,10 @@ export class CommandProcessor {
       'Esc - Cancel command mode',
     ];
     return commands.join('\n');
+  }
+
+  hasCommand(command: string): boolean {
+    const resolved = this.commandAliases.get(command) || command;
+    return this.commandHandlers.has(resolved);
   }
 }

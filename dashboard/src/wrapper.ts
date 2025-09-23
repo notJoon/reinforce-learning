@@ -2,7 +2,6 @@ import { InteractiveDashboard } from './dashboard.js';
 import {
   TrainingMetrics,
   ControlCommand,
-  TrainingControl,
   DashboardConfig,
   RLAgent,
   DiscreteEnvironment,
@@ -11,24 +10,33 @@ import {
   EpisodeInfo,
 } from './types.js';
 
+// Configuration constants
+const DEFAULT_VALUES = {
+  SLEEP_DELAY_MS: 100,
+  MILESTONE_INTERVAL: 100,
+  MIN_SLEEP_MS: 1,
+  DEFAULT_TARGET_EPISODES: 100,
+  DEFAULT_MAX_STEPS: 100,
+  DEFAULT_ALPHA: 0.1,
+  DEFAULT_GAMMA: 0.95,
+  DEFAULT_EPSILON: 1.0,
+  DEFAULT_EPSILON_DECAY: 0.99,
+} as const;
+
 export class InteractiveWrapper {
   private dashboard: InteractiveDashboard;
   private currentEpisode: number = 0;
   private currentStep: number = 0;
   private episodeReward: number = 0;
   private totalReward: number = 0;
-  private episodeStarted: boolean = false;
 
   // Control state
   private isPaused: boolean = false;
   private shouldStop: boolean = false;
   private shouldReset: boolean = false;
   private continuousMode: boolean = false;
-  private targetEpisodes: number = 100;
-
   // Reference to agent for parameter updates
   private agent: RLAgent<unknown, unknown> | null = null;
-  private env: DiscreteEnvironment<unknown, unknown> | null = null;
 
   constructor(dashboardConfig?: DashboardConfig) {
     this.dashboard = new InteractiveDashboard(dashboardConfig);
@@ -97,10 +105,10 @@ export class InteractiveWrapper {
   /**
    * Wraps the agent's train method with interactive controls
    */
-  wrapAgent<S, A>(agent: RLAgent<S, A>, env?: DiscreteEnvironment<S, A>): InteractiveAgent<S, A> {
+  wrapAgent<S, A>(agent: RLAgent<S, A>, _env?: DiscreteEnvironment<S, A>): InteractiveAgent<S, A> {
     const wrapper = this;
+    // Safe type conversion with proper handling
     this.agent = agent as RLAgent<unknown, unknown>;
-    this.env = (env as DiscreteEnvironment<unknown, unknown>) || null;
 
     const originalTrain = agent.train.bind(agent);
 
@@ -113,15 +121,14 @@ export class InteractiveWrapper {
 
       // Set initial parameters
       const control = wrapper.dashboard.getControl();
-      wrapper.targetEpisodes = control.targetEpisodes;
       wrapper.continuousMode = control.continuousMode;
 
       // Initialize dashboard parameters
       wrapper.dashboard.setParameters({
-        alpha: agent.alpha || 0.1,
-        gamma: agent.gamma || 0.95,
-        epsilon: agent.policy?.getEpsilon ? agent.policy.getEpsilon() : 1.0,
-        epsilonDecay: agent.policy?.getDecay ? agent.policy.getDecay() : 0.99,
+        alpha: agent.alpha || DEFAULT_VALUES.DEFAULT_ALPHA,
+        gamma: agent.gamma || DEFAULT_VALUES.DEFAULT_GAMMA,
+        epsilon: agent.policy?.getEpsilon ? agent.policy.getEpsilon() : DEFAULT_VALUES.DEFAULT_EPSILON,
+        epsilonDecay: agent.policy?.getDecay ? agent.policy.getDecay() : DEFAULT_VALUES.DEFAULT_EPSILON_DECAY,
       });
 
       // Training loop with interactive control
@@ -131,7 +138,7 @@ export class InteractiveWrapper {
       while (!wrapper.shouldStop) {
         // Check for pause
         while (wrapper.isPaused && !wrapper.shouldStop && !wrapper.shouldReset) {
-          await wrapper.sleep(100);
+          await wrapper.sleep(DEFAULT_VALUES.SLEEP_DELAY_MS);
         }
 
         // Check for reset (can happen even after completion)
@@ -194,14 +201,14 @@ export class InteractiveWrapper {
 
         // If training is completed, just wait for commands
         if (trainingCompleted) {
-          await wrapper.sleep(100);
+          await wrapper.sleep(DEFAULT_VALUES.SLEEP_DELAY_MS);
           continue;
         }
 
         // Run one episode
         const episodeConfig = {
           episodes: 1,
-          maxStepsPerEpisode: config.maxStepsPerEpisode || 100,
+          maxStepsPerEpisode: config.maxStepsPerEpisode || DEFAULT_VALUES.DEFAULT_MAX_STEPS,
           onEpisodeEnd: (info: EpisodeInfo) => {
             episodesCompleted++;
             wrapper.currentEpisode = episodesCompleted;
@@ -222,7 +229,7 @@ export class InteractiveWrapper {
             wrapper.dashboard.update(metrics);
 
             // Log milestones
-            if (episodesCompleted % 100 === 0) {
+            if (episodesCompleted % DEFAULT_VALUES.MILESTONE_INTERVAL === 0) {
               wrapper.dashboard.log(
                 `Episode ${episodesCompleted} - Reward: ${info.totalReward.toFixed(2)}`,
               );
@@ -262,16 +269,14 @@ export class InteractiveWrapper {
         // Reset episode tracking
         wrapper.currentStep = 0;
         wrapper.episodeReward = 0;
-        wrapper.episodeStarted = false;
 
         // Run single episode
         originalTrain(episodeConfig);
 
-        // Update target episodes from dashboard
-        wrapper.targetEpisodes = wrapper.dashboard.getTargetEpisodes();
+        // Update continues based on dashboard settings
 
         // Small delay to prevent UI blocking
-        await wrapper.sleep(1);
+        await wrapper.sleep(DEFAULT_VALUES.MIN_SLEEP_MS);
       }
 
       // No need for separate completion message here since it's handled in the loop

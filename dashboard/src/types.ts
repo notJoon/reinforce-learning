@@ -1,20 +1,30 @@
+/**
+ * Metrics collected during training
+ */
 export interface TrainingMetrics {
-  episode: number;
-  step: number;
-  totalReward: number;
-  episodeReward: number;
-  epsilon?: number;
-  alpha?: number;
-  terminated: boolean;
-  truncated: boolean;
-  timestamp: number;
+  readonly episode: number;
+  readonly step: number;
+  readonly totalReward: number;
+  readonly episodeReward: number;
+  readonly epsilon?: number;
+  readonly alpha?: number;
+  readonly terminated: boolean;
+  readonly truncated: boolean;
+  readonly timestamp: number;
 }
 
+/**
+ * Dashboard configuration options
+ */
 export interface DashboardConfig {
-  refreshRate?: number; // milliseconds
-  historyLength?: number; // number of episodes to keep in history
-  movingAverageWindow?: number; // for smoothing reward curves
-  enableControls?: boolean; // enable interactive controls
+  /** Refresh rate in milliseconds */
+  readonly refreshRate?: number;
+  /** Number of episodes to keep in history */
+  readonly historyLength?: number;
+  /** Window size for moving average calculation */
+  readonly movingAverageWindow?: number;
+  /** Enable interactive controls */
+  readonly enableControls?: boolean;
 }
 
 export interface DashboardCallbacks {
@@ -25,6 +35,9 @@ export interface DashboardCallbacks {
   onControlCommand?: (command: ControlCommand) => void;
 }
 
+/**
+ * Accumulated training statistics
+ */
 export interface TrainingStats {
   episodes: number;
   totalSteps: number;
@@ -46,6 +59,9 @@ export enum ControlCommand {
   FIXED_MODE = 'fixed',
 }
 
+/**
+ * Training control state and parameters
+ */
 export interface TrainingControl {
   isPaused: boolean;
   continuousMode: boolean;
@@ -59,7 +75,9 @@ export interface TrainingControl {
   };
 }
 
-// Agent-related interfaces
+/**
+ * Generic reinforcement learning policy interface
+ */
 export interface RLPolicy<S, A> {
   select(state: S, legal: A[], qval: (s: S, a: A) => number): A | undefined;
   getEpsilon?(): number;
@@ -69,17 +87,23 @@ export interface RLPolicy<S, A> {
   reset?(): void;
 }
 
+/**
+ * Q-table storage interface
+ */
 export interface QTableInterface<S, A> {
   get(state: S, action: A): number;
   set(state: S, action: A, value: number): void;
   reset?(): void;
 }
 
+/**
+ * Base reinforcement learning agent interface
+ */
 export interface RLAgent<S, A> {
   alpha: number;
   gamma: number;
-  policy?: RLPolicy<S, A>;
-  q?: QTableInterface<S, A>;
+  readonly policy?: RLPolicy<S, A>;
+  readonly q?: QTableInterface<S, A>;
   train(config: TrainingConfig<S, A>): void;
 }
 
@@ -90,12 +114,15 @@ export interface TrainingConfig<S, A> {
   onUpdate?: (state: S, action: A, reward: number, nextState: S) => void;
 }
 
+/**
+ * Information about a completed episode
+ */
 export interface EpisodeInfo {
-  episode: number;
-  steps: number;
-  totalReward: number;
-  terminated: boolean;
-  truncated?: boolean;
+  readonly episode: number;
+  readonly steps: number;
+  readonly totalReward: number;
+  readonly terminated: boolean;
+  readonly truncated?: boolean;
 }
 
 export interface InteractiveAgent<S, A> extends RLAgent<S, A> {
@@ -110,6 +137,9 @@ export interface InteractiveTrainingConfig {
   onUpdate?: (state: unknown, action: unknown, reward: number, nextState: unknown) => void;
 }
 
+/**
+ * Discrete environment interface for RL agents
+ */
 export interface DiscreteEnvironment<S, A> {
   reset(): S;
   actions(state: S): A[];

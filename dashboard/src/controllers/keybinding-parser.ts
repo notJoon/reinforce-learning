@@ -9,21 +9,52 @@ export interface ParsedBinding {
   description?: string;
 }
 
+export interface ParseResult<T> {
+  success: boolean;
+  data?: T;
+  error?: string;
+}
+
+// Constants
+const VALID_MODIFIERS = ['ctrl', 'alt', 'shift', 'meta', 'cmd'] as const;
+type ValidModifier = typeof VALID_MODIFIERS[number];
+
 export class KeybindingParser {
   /**
    * Parse keybindings from a text file
    */
   static parseFile(filePath: string): KeyBinding[] {
-    const content = fs.readFileSync(filePath, 'utf-8');
-    return this.parseContent(content);
+    try {
+      const content = fs.readFileSync(filePath, 'utf-8');
+      const result = this.parseContentInternal(content);
+      if (!result.success || !result.data) {
+        throw new Error(result.error || 'Failed to parse content');
+      }
+      return result.data;
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      throw new Error(`Failed to read file: ${errorMessage}`);
+    }
   }
 
   /**
-   * Parse keybindings from text content
+   * Parse keybindings from text content (public API)
    */
   static parseContent(content: string): KeyBinding[] {
+    const result = this.parseContentInternal(content);
+    if (!result.success || !result.data) {
+      throw new Error(result.error || 'Failed to parse content');
+    }
+    return result.data;
+  }
+
+  /**
+   * Internal parse method with result type
+   */
+  private static parseContentInternal(content: string): ParseResult<KeyBinding[]> {
     const lines = content.split('\n');
     const bindings: KeyBinding[] = [];
+    const errors: string[] = [];
 
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i].trim();
@@ -33,24 +64,43 @@ export class KeybindingParser {
         continue;
       }
 
-      try {
-        const binding = this.parseLine(line, i + 1);
-        if (binding) {
-          bindings.push(binding);
-        }
-      } catch (error) {
-        throw new Error(`Error parsing line ${i + 1}: ${error}`);
+      const result = this.parseLineInternal(line, i + 1);
+      if (result.success && result.data) {
+        bindings.push(result.data);
+      } else if (!result.success) {
+        errors.push(`Line ${i + 1}: ${result.error}`);
       }
     }
 
-    return bindings;
+    if (errors.length > 0) {
+      return {
+        success: false,
+        error: errors.join('\n'),
+      };
+    }
+
+    return {
+      success: true,
+      data: bindings,
+    };
   }
 
   /**
-   * Parse a single keybinding line
+   * Parse a single keybinding line (public API)
    * Format: [modifiers+]key -> action [condition] # description
    */
   static parseLine(line: string, lineNumber?: number): KeyBinding | null {
+    const result = this.parseLineInternal(line, lineNumber);
+    if (!result.success || !result.data) {
+      throw new Error(result.error || 'Failed to parse line');
+    }
+    return result.data;
+  }
+
+  /**
+   * Internal parse line method with result type
+   */
+  private static parseLineInternal(line: string, _lineNumber?: number): ParseResult<KeyBinding> {
     // Remove inline comment
     const commentIndex = line.indexOf('#');
     const description = commentIndex !== -1 ? line.slice(commentIndex + 1).trim() : undefined;
@@ -59,14 +109,24 @@ export class KeybindingParser {
     // Split by arrow
     const parts = mainPart.split('->');
     if (parts.length !== 2) {
-      throw new Error(`Invalid format: expected 'key -> action'`);
+      return {
+        success: false,
+        error: `Invalid format: expected 'key -> action'`,
+      };
     }
 
     const keyPart = parts[0].trim();
     const actionPart = parts[1].trim();
 
     // Parse key and modifiers
-    const { key, modifiers } = this.parseKeyPart(keyPart);
+    const keyResult = this.parseKeyPart(keyPart);
+    if (!keyResult.success || !keyResult.data) {
+      return {
+        success: false,
+        error: keyResult.error || 'Failed to parse key part',
+      };
+    }
+    const { key, modifiers } = keyResult.data;
 
     // Parse action and condition
     const { action, condition } = this.parseActionPart(actionPart);
@@ -85,25 +145,33 @@ export class KeybindingParser {
       binding.condition = this.createConditionFunction(condition);
     }
 
-    return binding;
+    return {
+      success: true,
+      data: binding,
+    };
   }
 
   /**
    * Parse the key part of the binding
    */
-  private static parseKeyPart(keyPart: string): { key: string; modifiers: string[] } {
+  private static parseKeyPart(keyPart: string): ParseResult<{ key: string; modifiers: string[] }> {
     // Special case for single character keys like +, -, *, etc.
     if (keyPart.length === 1 || !keyPart.includes('+')) {
-      return { key: keyPart, modifiers: [] };
+      return {
+        success: true,
+        data: { key: keyPart, modifiers: [] },
+      };
     }
 
     // Check if it's just a plus key
     if (keyPart === '+') {
-      return { key: '+', modifiers: [] };
+      return {
+        success: true,
+        data: { key: '+', modifiers: [] },
+      };
     }
 
     // For combinations with modifiers
-    const validModifiers = ['ctrl', 'alt', 'shift', 'meta', 'cmd'];
     const parts: string[] = [];
     let current = '';
 
@@ -113,7 +181,7 @@ export class KeybindingParser {
     for (let i = 0; i < tokens.length; i++) {
       const token = tokens[i];
 
-      if (validModifiers.includes(token)) {
+      if (VALID_MODIFIERS.includes(token as ValidModifier)) {
         parts.push(token);
       } else if (i === tokens.length - 1) {
         // Last token is the key
@@ -126,7 +194,10 @@ export class KeybindingParser {
         }
       } else {
         // Not a valid modifier and not the last token
-        throw new Error(`Invalid modifier: ${token}`);
+        return {
+          success: false,
+          error: `Invalid modifier: ${token}`,
+        };
       }
     }
 
@@ -136,8 +207,11 @@ export class KeybindingParser {
     }
 
     return {
-      key: current || keyPart,
-      modifiers: parts.filter((m) => validModifiers.includes(m)),
+      success: true,
+      data: {
+        key: current || keyPart,
+        modifiers: parts.filter((m) => VALID_MODIFIERS.includes(m as ValidModifier)),
+      },
     };
   }
 
