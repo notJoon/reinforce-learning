@@ -8,6 +8,33 @@ import {
   TrainingControl,
 } from './types.js';
 
+// Configuration constants
+const DEFAULT_CONFIG = {
+  REFRESH_RATE: 100,
+  HISTORY_LENGTH: 100,
+  MOVING_AVERAGE_WINDOW: 10,
+  GRID_ROWS: 12,
+  GRID_COLS: 12,
+  MIN_ALPHA: 0.001,
+  MAX_ALPHA: 1.0,
+  ALPHA_STEP: 0.01,
+  MIN_GAMMA: 0.0,
+  MAX_GAMMA: 1.0,
+  GAMMA_STEP: 0.01,
+  MIN_EPSILON: 0.0,
+  MAX_EPSILON: 1.0,
+  EPSILON_STEP: 0.05,
+  MIN_EPSILON_DECAY: 0.9,
+  MAX_EPSILON_DECAY: 1.0,
+  EPSILON_DECAY_STEP: 0.001,
+  EPISODE_STEP: 10,
+  MIN_EPISODES: 10,
+  SUCCESS_WINDOW: 100,
+  COMMAND_INPUT_WIDTH: '50%',
+  COMMAND_INPUT_HEIGHT: 1,
+  COMMAND_INPUT_TOP: '95%',
+} as const;
+
 export class InteractiveDashboard {
   private screen: blessed.Widgets.Screen;
   private grid: contrib.Widgets.GridElement;
@@ -29,7 +56,6 @@ export class InteractiveDashboard {
   private isRunning: boolean = false;
   private isCompleted: boolean = false;
   private commandMode: boolean = false;
-  private commandBuffer: string = '';
 
   // Callbacks
   private onParameterChange?: (param: string, value: number) => void;
@@ -37,9 +63,9 @@ export class InteractiveDashboard {
 
   constructor(config: DashboardConfig = {}) {
     this.config = {
-      refreshRate: config.refreshRate ?? 100,
-      historyLength: config.historyLength ?? 100,
-      movingAverageWindow: config.movingAverageWindow ?? 10,
+      refreshRate: config.refreshRate ?? DEFAULT_CONFIG.REFRESH_RATE,
+      historyLength: config.historyLength ?? DEFAULT_CONFIG.HISTORY_LENGTH,
+      movingAverageWindow: config.movingAverageWindow ?? DEFAULT_CONFIG.MOVING_AVERAGE_WINDOW,
       enableControls: config.enableControls ?? true,
     };
 
@@ -74,7 +100,11 @@ export class InteractiveDashboard {
       fullUnicode: true,
     });
 
-    this.grid = new contrib.grid({ rows: 12, cols: 12, screen: this.screen });
+    this.grid = new contrib.grid({ 
+      rows: DEFAULT_CONFIG.GRID_ROWS, 
+      cols: DEFAULT_CONFIG.GRID_COLS, 
+      screen: this.screen 
+    });
 
     this.widgets = this.createWidgets();
     this.setupEventHandlers();
@@ -172,10 +202,10 @@ export class InteractiveDashboard {
     // Command input (hidden by default)
     const commandInput = blessed.textbox({
       parent: this.screen,
-      top: '95%',
+      top: DEFAULT_CONFIG.COMMAND_INPUT_TOP,
       left: 0,
-      width: '50%',
-      height: 1,
+      width: DEFAULT_CONFIG.COMMAND_INPUT_WIDTH,
+      height: DEFAULT_CONFIG.COMMAND_INPUT_HEIGHT,
       style: {
         fg: 'white',
         bg: 'black',
@@ -185,7 +215,7 @@ export class InteractiveDashboard {
     });
 
     // Status bar (very bottom)
-    const statusBar = this.grid.set(11, 0, 1, 9, blessed.box, {
+    this.grid.set(11, 0, 1, 9, blessed.box, {
       tags: true,
       style: {
         fg: 'white',
@@ -365,13 +395,16 @@ export class InteractiveDashboard {
 
     // Episode control
     this.screen.key(['+', '='], () => {
-      this.control.targetEpisodes += 10;
+      this.control.targetEpisodes += DEFAULT_CONFIG.EPISODE_STEP;
       this.updateControlPanel();
       this.log(`Target episodes: ${this.control.targetEpisodes}`);
     });
 
     this.screen.key(['-', '_'], () => {
-      this.control.targetEpisodes = Math.max(10, this.control.targetEpisodes - 10);
+      this.control.targetEpisodes = Math.max(
+        DEFAULT_CONFIG.MIN_EPISODES, 
+        this.control.targetEpisodes - DEFAULT_CONFIG.EPISODE_STEP
+      );
       this.updateControlPanel();
       this.log(`Target episodes: ${this.control.targetEpisodes}`);
     });
@@ -384,7 +417,10 @@ export class InteractiveDashboard {
 
     // Parameter adjustments
     this.screen.key(['1'], () => {
-      this.control.parameters.alpha = Math.max(0.001, this.control.parameters.alpha - 0.01);
+      this.control.parameters.alpha = Math.max(
+        DEFAULT_CONFIG.MIN_ALPHA, 
+        this.control.parameters.alpha - DEFAULT_CONFIG.ALPHA_STEP
+      );
       if (this.onParameterChange) {
         this.onParameterChange('alpha', this.control.parameters.alpha);
       }
@@ -393,7 +429,10 @@ export class InteractiveDashboard {
     });
 
     this.screen.key(['2'], () => {
-      this.control.parameters.alpha = Math.min(1.0, this.control.parameters.alpha + 0.01);
+      this.control.parameters.alpha = Math.min(
+        DEFAULT_CONFIG.MAX_ALPHA, 
+        this.control.parameters.alpha + DEFAULT_CONFIG.ALPHA_STEP
+      );
       if (this.onParameterChange) {
         this.onParameterChange('alpha', this.control.parameters.alpha);
       }
@@ -402,7 +441,10 @@ export class InteractiveDashboard {
     });
 
     this.screen.key(['3'], () => {
-      this.control.parameters.gamma = Math.max(0.0, this.control.parameters.gamma - 0.01);
+      this.control.parameters.gamma = Math.max(
+        DEFAULT_CONFIG.MIN_GAMMA, 
+        this.control.parameters.gamma - DEFAULT_CONFIG.GAMMA_STEP
+      );
       if (this.onParameterChange) {
         this.onParameterChange('gamma', this.control.parameters.gamma);
       }
@@ -411,7 +453,10 @@ export class InteractiveDashboard {
     });
 
     this.screen.key(['4'], () => {
-      this.control.parameters.gamma = Math.min(1.0, this.control.parameters.gamma + 0.01);
+      this.control.parameters.gamma = Math.min(
+        DEFAULT_CONFIG.MAX_GAMMA, 
+        this.control.parameters.gamma + DEFAULT_CONFIG.GAMMA_STEP
+      );
       if (this.onParameterChange) {
         this.onParameterChange('gamma', this.control.parameters.gamma);
       }
@@ -420,7 +465,10 @@ export class InteractiveDashboard {
     });
 
     this.screen.key(['5'], () => {
-      this.control.parameters.epsilon = Math.max(0.0, this.control.parameters.epsilon - 0.05);
+      this.control.parameters.epsilon = Math.max(
+        DEFAULT_CONFIG.MIN_EPSILON, 
+        this.control.parameters.epsilon - DEFAULT_CONFIG.EPSILON_STEP
+      );
       if (this.onParameterChange) {
         this.onParameterChange('epsilon', this.control.parameters.epsilon);
       }
@@ -429,7 +477,10 @@ export class InteractiveDashboard {
     });
 
     this.screen.key(['6'], () => {
-      this.control.parameters.epsilon = Math.min(1.0, this.control.parameters.epsilon + 0.05);
+      this.control.parameters.epsilon = Math.min(
+        DEFAULT_CONFIG.MAX_EPSILON, 
+        this.control.parameters.epsilon + DEFAULT_CONFIG.EPSILON_STEP
+      );
       if (this.onParameterChange) {
         this.onParameterChange('epsilon', this.control.parameters.epsilon);
       }
@@ -440,8 +491,8 @@ export class InteractiveDashboard {
     this.screen.key(['7'], () => {
       if (this.control.parameters.epsilonDecay) {
         this.control.parameters.epsilonDecay = Math.max(
-          0.9,
-          this.control.parameters.epsilonDecay - 0.001,
+          DEFAULT_CONFIG.MIN_EPSILON_DECAY,
+          this.control.parameters.epsilonDecay - DEFAULT_CONFIG.EPSILON_DECAY_STEP,
         );
         if (this.onParameterChange) {
           this.onParameterChange('epsilonDecay', this.control.parameters.epsilonDecay);
@@ -454,8 +505,8 @@ export class InteractiveDashboard {
     this.screen.key(['8'], () => {
       if (this.control.parameters.epsilonDecay) {
         this.control.parameters.epsilonDecay = Math.min(
-          1.0,
-          this.control.parameters.epsilonDecay + 0.001,
+          DEFAULT_CONFIG.MAX_EPSILON_DECAY,
+          this.control.parameters.epsilonDecay + DEFAULT_CONFIG.EPSILON_DECAY_STEP,
         );
         if (this.onParameterChange) {
           this.onParameterChange('epsilonDecay', this.control.parameters.epsilonDecay);
@@ -586,7 +637,7 @@ export class InteractiveDashboard {
     this.stats.minReward = Math.min(this.stats.minReward, metrics.episodeReward);
 
     if (metrics.terminated) {
-      const successWindow = Math.min(100, this.stats.episodes);
+      const successWindow = Math.min(DEFAULT_CONFIG.SUCCESS_WINDOW, this.stats.episodes);
       const recentSuccesses = this.stats.rewardHistory
         .slice(-successWindow)
         .filter((r) => r > 0).length;
@@ -679,7 +730,6 @@ export class InteractiveDashboard {
 
   private enterCommandMode() {
     this.commandMode = true;
-    this.commandBuffer = ':';
 
     if (this.widgets.commandInput) {
       this.widgets.commandInput.show();
@@ -703,7 +753,6 @@ export class InteractiveDashboard {
 
   private exitCommandMode() {
     this.commandMode = false;
-    this.commandBuffer = '';
 
     if (this.widgets.commandInput) {
       this.widgets.commandInput.hide();
