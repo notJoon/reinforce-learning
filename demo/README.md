@@ -17,10 +17,10 @@ npm run dev:knight -- 5 --visualize
 
 ## Demo Overview
 
-| Demo                                            | Description                           | Difficulty | Visualization   |
-| ----------------------------------------------- | ------------------------------------- | ---------- | --------------- |
-| [GridWorld](./gridworld/README.md)              | Navigate from start to goal in a grid | Easy       | ✅ Full support |
-| [Knight's Tour](./knight/README.md)             | Visit all chess squares exactly once  | Hard       | ✅ Full support |
+| Demo                                | Description                           | Difficulty | Visualization   |
+| ----------------------------------- | ------------------------------------- | ---------- | --------------- |
+| [GridWorld](./gridworld/README.md)  | Navigate from start to goal in a grid | Easy       | ✅ Full support |
+| [Knight's Tour](./knight/README.md) | Visit all chess squares exactly once  | Hard       | ✅ Full support |
 
 TODO: add more examples.
 
